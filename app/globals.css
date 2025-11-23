@@ -1,0 +1,49 @@
+@import "tailwindcss";
+
+:root {
+  /* Fonts */
+  --font-playfair: var(--font-playfair);
+  --font-montserrat: var(--font-montserrat);
+  --font-source-sans: var(--font-source-sans);
+
+  /* Colors */
+  --color-royal-black: #0A0A0A;
+  --color-prestige-gold: #F5C542;
+  --color-ivory-white: #FDFBF7;
+  --color-carbon-gray: #1A1A1A;
+  --color-emerald-signal: #3ECF8E;
+  --color-carmine-red: #CE2B37;
+  --color-bronze-glow: #C08552;
+  --color-electric-yellow: #FFD944;
+}
+
+@theme {
+  /* Fonts */
+  --font-playfair: var(--font-playfair);
+  --font-montserrat: var(--font-montserrat);
+  --font-source-sans: var(--font-source-sans);
+
+  /* Colors */
+  --color-royal-black: var(--color-royal-black);
+  --color-prestige-gold: var(--color-prestige-gold);
+  --color-ivory-white: var(--color-ivory-white);
+  --color-carbon-gray: var(--color-carbon-gray);
+  --color-emerald-signal: var(--color-emerald-signal);
+  --color-carmine-red: var(--color-carmine-red);
+  --color-bronze-glow: var(--color-bronze-glow);
+  --color-electric-yellow: var(--color-electric-yellow);
+}
+
+body {
+  background-color: var(--color-royal-black);
+  color: var(--color-ivory-white);
+  font-family: var(--font-source-sans), sans-serif;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-playfair), serif;
+}
+
+.font-montserrat {
+  font-family: var(--font-montserrat), sans-serif;
+}
