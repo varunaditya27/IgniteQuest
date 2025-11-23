@@ -1,0 +1,25 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Participant {
+  id        String   @id @default(cuid())
+  name      String
+  score     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Question {
+  id            String   @id @default(cuid())
+  text          String
+  options       String[] // Array of strings for options
+  correctOption Int      // Index of the correct option (0-3)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
