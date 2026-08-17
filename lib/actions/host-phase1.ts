@@ -3,7 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { env } from "@/lib/env";
 import { gameConfig } from "@/lib/config";
-import { requireHost } from "@/lib/actions/guard";
+import { requireHost, assertPhase } from "@/lib/actions/guard";
 import { getGameStateWithRelations, getTeamsForHost, getUnusedPhase1Questions } from "@/lib/game/queries";
 import { teamForTurn } from "@/lib/game/round-robin";
 import { rankPhase1, pickFinalists } from "@/lib/game/scoring";
@@ -26,6 +26,9 @@ async function broadcastScores() {
 
 export async function startPhase1() {
     await requireHost();
+    const current = await prisma.gameState.findUniqueOrThrow({ where: { eventId: env.eventId } });
+    assertPhase(current.phase, GamePhase.REGISTRATION);
+
     const [teams, unused] = await Promise.all([
         getTeamsForHost(env.eventId),
         getUnusedPhase1Questions(env.eventId),
@@ -56,28 +59,38 @@ export async function startPhase1() {
 
 export async function revealCurrentQuestion() {
     await requireHost();
-    await prisma.gameState.update({
-        where: { eventId: env.eventId },
+    const result = await prisma.gameState.updateMany({
+        where: { eventId: env.eventId, phase: GamePhase.PHASE_1 },
         data: { questionRevealed: true, questionStartedAt: new Date(), answerLocked: false },
     });
+    if (result.count === 0) throw new Error("Not in Phase 1.");
     await broadcastState();
 }
 
 export async function lockCurrentAnswer() {
     await requireHost();
-    await prisma.gameState.update({
-        where: { eventId: env.eventId },
+    const result = await prisma.gameState.updateMany({
+        where: { eventId: env.eventId, phase: GamePhase.PHASE_1 },
         data: { answerLocked: true },
     });
+    if (result.count === 0) throw new Error("Not in Phase 1.");
     await broadcastState();
 }
 
 export async function selectActiveTeam(teamId: string) {
     await requireHost();
-    await prisma.gameState.update({
-        where: { eventId: env.eventId },
+    // A team plucked from anywhere but this event's non-eliminated roster (a stale
+    // client, a forged id) must never become the active team.
+    const team = await prisma.team.findUnique({ where: { id: teamId }, select: { eventId: true, eliminated: true } });
+    if (!team || team.eventId !== env.eventId || team.eliminated) {
+        throw new Error("Not an eligible team for this event.");
+    }
+
+    const result = await prisma.gameState.updateMany({
+        where: { eventId: env.eventId, phase: GamePhase.PHASE_1 },
         data: { activeTeamId: teamId },
     });
+    if (result.count === 0) throw new Error("Not in Phase 1.");
     await broadcastState();
 }
 
@@ -87,6 +100,7 @@ export async function selectActiveTeam(teamId: string) {
 export async function recordPhase1Answer(isCorrect: boolean) {
     await requireHost();
     const state = await getGameStateWithRelations(env.eventId);
+    assertPhase(state.phase, GamePhase.PHASE_1);
     if (!state.currentQuestion || !state.activeTeam) {
         throw new Error("No active question/team to record an answer for.");
     }
@@ -125,6 +139,8 @@ export async function recordPhase1Answer(isCorrect: boolean) {
 export async function advanceToNextPhase1Question() {
     await requireHost();
     const state = await getGameStateWithRelations(env.eventId);
+    assertPhase(state.phase, GamePhase.PHASE_1);
+
     const [teams, unused] = await Promise.all([
         getTeamsForHost(env.eventId),
         getUnusedPhase1Questions(env.eventId),
@@ -156,6 +172,9 @@ export async function advanceToNextPhase1Question() {
 
 export async function lockPhase1AndSelectFinalists() {
     await requireHost();
+    const current = await prisma.gameState.findUniqueOrThrow({ where: { eventId: env.eventId } });
+    assertPhase(current.phase, GamePhase.PHASE_1);
+
     // Finalist cutoff: score first, cumulative Phase 1 response time as tiebreaker
     // (faster team qualifies) — mirrors the Phase 2 ranking model.
     const [teams, answers] = await Promise.all([
@@ -165,28 +184,27 @@ export async function lockPhase1AndSelectFinalists() {
     const ranked = rankPhase1(teams, answers);
     const finalistIds = pickFinalists(ranked, gameConfig.finalistCount);
 
-    await prisma.$transaction(
-        teams.map((team) =>
+    await prisma.$transaction([
+        ...teams.map((team) =>
             prisma.team.update({
                 where: { id: team.id },
                 data: { eliminated: !finalistIds.has(team.id) },
             })
-        )
-    );
-
-    await prisma.gameState.update({
-        where: { eventId: env.eventId },
-        data: {
-            phase: GamePhase.PHASE_2,
-            currentQuestionId: null,
-            activeTeamId: null,
-            turnNumber: 0,
-            questionStartedAt: null,
-            questionRevealed: false,
-            answerLocked: false,
-            hiddenOptions: [],
-        },
-    });
+        ),
+        prisma.gameState.update({
+            where: { eventId: env.eventId },
+            data: {
+                phase: GamePhase.PHASE_2,
+                currentQuestionId: null,
+                activeTeamId: null,
+                turnNumber: 0,
+                questionStartedAt: null,
+                questionRevealed: false,
+                answerLocked: false,
+                hiddenOptions: [],
+            },
+        }),
+    ]);
 
     await broadcastState();
     await broadcastScores();

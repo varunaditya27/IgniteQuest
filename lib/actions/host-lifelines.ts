@@ -29,20 +29,34 @@ async function recordUsage(teamId: string, type: LifelineType, questionId: strin
     }
 }
 
+type TurnCheck =
+    | { ok: true; question: NonNullable<Awaited<ReturnType<typeof getGameStateWithRelations>>["currentQuestion"]>; team: NonNullable<Awaited<ReturnType<typeof getGameStateWithRelations>>["activeTeam"]> }
+    | { ok: false; error: string };
+
+// All four lifelines are Phase 1 only (gpt-chat-reference.md section 4) — Phase 2
+// has no lifelines, teams answer simultaneously with no host-mediated turn.
+async function requireActivePhase1Turn(): Promise<TurnCheck> {
+    const state = await getGameStateWithRelations(env.eventId);
+    if (state.phase !== "PHASE_1") {
+        return { ok: false, error: "Lifelines can only be used during Phase 1." };
+    }
+    if (!state.currentQuestion || !state.activeTeam) {
+        return { ok: false, error: "No active question/team." };
+    }
+    return { ok: true, question: state.currentQuestion, team: state.activeTeam };
+}
+
 // 50:50 hides two of the three wrong options (see gpt-chat-reference.md section 4.1).
 export async function useFiftyFifty(): Promise<LifelineResult> {
     await requireHost();
-    const state = await getGameStateWithRelations(env.eventId);
-    if (!state.currentQuestion || !state.activeTeam) {
-        return { success: false, error: "No active question/team." };
-    }
+    const check = await requireActivePhase1Turn();
+    if (!check.ok) return { success: false, error: check.error };
+    const { question, team } = check;
 
-    const recorded = await recordUsage(state.activeTeam.id, LifelineType.FIFTY_FIFTY, state.currentQuestion.id);
+    const recorded = await recordUsage(team.id, LifelineType.FIFTY_FIFTY, question.id);
     if (!recorded) return { success: false, error: "50:50 already used by this team." };
 
-    const wrongIndices = state.currentQuestion.options
-        .map((_, i) => i)
-        .filter((i) => i !== state.currentQuestion!.correctOption);
+    const wrongIndices = question.options.map((_, i) => i).filter((i) => i !== question.correctOption);
     const toHide = wrongIndices.sort(() => Math.random() - 0.5).slice(0, 2);
 
     await prisma.gameState.update({ where: { eventId: env.eventId }, data: { hiddenOptions: toHide } });
@@ -52,37 +66,33 @@ export async function useFiftyFifty(): Promise<LifelineResult> {
 
 export async function useAskAudience(): Promise<LifelineResult> {
     await requireHost();
-    const state = await getGameStateWithRelations(env.eventId);
-    if (!state.currentQuestion || !state.activeTeam) {
-        return { success: false, error: "No active question/team." };
-    }
-    const recorded = await recordUsage(state.activeTeam.id, LifelineType.ASK_AUDIENCE, state.currentQuestion.id);
+    const check = await requireActivePhase1Turn();
+    if (!check.ok) return { success: false, error: check.error };
+    const { question, team } = check;
+
+    const recorded = await recordUsage(team.id, LifelineType.ASK_AUDIENCE, question.id);
     if (!recorded) return { success: false, error: "Ask the Audience already used by this team." };
-    await broadcast(env.eventId, { type: "LIFELINE_USED", payload: { teamId: state.activeTeam.id, lifeline: LifelineType.ASK_AUDIENCE } });
+    await broadcast(env.eventId, { type: "LIFELINE_USED", payload: { teamId: team.id, lifeline: LifelineType.ASK_AUDIENCE } });
     return { success: true };
 }
 
 export async function useAskExpert(): Promise<LifelineResult> {
     await requireHost();
-    const state = await getGameStateWithRelations(env.eventId);
-    if (!state.currentQuestion || !state.activeTeam) {
-        return { success: false, error: "No active question/team." };
-    }
-    const recorded = await recordUsage(state.activeTeam.id, LifelineType.ASK_EXPERT, state.currentQuestion.id);
+    const check = await requireActivePhase1Turn();
+    if (!check.ok) return { success: false, error: check.error };
+    const { question, team } = check;
+
+    const recorded = await recordUsage(team.id, LifelineType.ASK_EXPERT, question.id);
     if (!recorded) return { success: false, error: "Ask the Expert already used by this team." };
-    await broadcast(env.eventId, { type: "LIFELINE_USED", payload: { teamId: state.activeTeam.id, lifeline: LifelineType.ASK_EXPERT } });
+    await broadcast(env.eventId, { type: "LIFELINE_USED", payload: { teamId: team.id, lifeline: LifelineType.ASK_EXPERT } });
     return { success: true };
 }
 
 export async function useSwitchQuestion(): Promise<LifelineResult> {
     await requireHost();
-    const state = await getGameStateWithRelations(env.eventId);
-    if (!state.currentQuestion || !state.activeTeam) {
-        return { success: false, error: "No active question/team." };
-    }
-
-    const original = state.currentQuestion;
-    const teamId = state.activeTeam.id;
+    const check = await requireActivePhase1Turn();
+    if (!check.ok) return { success: false, error: check.error };
+    const { question: original, team } = check;
 
     // Same "unused" pool the normal round-robin draws from (presentedAt === null), so
     // a switched-away question — original or replacement — can never resurface later.
@@ -92,7 +102,7 @@ export async function useSwitchQuestion(): Promise<LifelineResult> {
     }
     const replacement = candidates[Math.floor(Math.random() * candidates.length)];
 
-    const recorded = await recordUsage(teamId, LifelineType.SWITCH_QUESTION, original.id, replacement.id);
+    const recorded = await recordUsage(team.id, LifelineType.SWITCH_QUESTION, original.id, replacement.id);
     if (!recorded) return { success: false, error: "Switch Question already used by this team." };
 
     await prisma.$transaction([

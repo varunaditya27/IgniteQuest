@@ -24,12 +24,13 @@ export async function startPhase2Question(order: number) {
     // whole point of Fastest Fingers (gpt-chat-reference.md section 8.1).
     if (question.presentedAt) throw new Error("This question has already been shown and cannot be restarted.");
 
-    await prisma.$transaction([
-        prisma.question.update({ where: { id: question.id }, data: { presentedAt: new Date() } }),
-        prisma.gameState.update({
-            where: { eventId: env.eventId },
+    await prisma.$transaction(async (tx) => {
+        await tx.question.update({ where: { id: question.id }, data: { presentedAt: new Date() } });
+        // Phase transitions into PHASE_2 happen exclusively via
+        // lockPhase1AndSelectFinalists — this only ever advances within Phase 2.
+        const result = await tx.gameState.updateMany({
+            where: { eventId: env.eventId, phase: GamePhase.PHASE_2 },
             data: {
-                phase: GamePhase.PHASE_2,
                 currentQuestionId: question.id,
                 activeTeamId: null,
                 questionRevealed: true,
@@ -37,17 +38,19 @@ export async function startPhase2Question(order: number) {
                 questionStartedAt: new Date(),
                 hiddenOptions: [],
             },
-        }),
-    ]);
+        });
+        if (result.count === 0) throw new Error("Not in Phase 2.");
+    });
     await broadcastState();
 }
 
 export async function lockPhase2Question() {
     await requireHost();
-    await prisma.gameState.update({
-        where: { eventId: env.eventId },
+    const result = await prisma.gameState.updateMany({
+        where: { eventId: env.eventId, phase: GamePhase.PHASE_2 },
         data: { answerLocked: true },
     });
+    if (result.count === 0) throw new Error("Not in Phase 2.");
     await broadcastState();
 }
 
@@ -60,9 +63,10 @@ export async function computeFinalStandings(): Promise<(FastestFingersResult & {
 
 export async function revealFinale() {
     await requireHost();
-    await prisma.gameState.update({
-        where: { eventId: env.eventId },
+    const result = await prisma.gameState.updateMany({
+        where: { eventId: env.eventId, phase: GamePhase.PHASE_2 },
         data: { phase: GamePhase.FINALE, currentQuestionId: null, questionStartedAt: null },
     });
+    if (result.count === 0) throw new Error("Not in Phase 2.");
     await broadcastState();
 }
