@@ -74,15 +74,15 @@ export function ProjectorView({ eventId, initialLeaderboard, ...initial }: Props
     }, [state.phase, router]);
 
     return (
-        <main className="min-h-screen bg-royal-black text-ivory-white flex flex-col items-center justify-center p-8 relative overflow-hidden">
-            <div className="absolute top-8 left-8 text-prestige-gold font-playfair text-2xl tracking-widest">IGNITEQUEST</div>
+        <main className="stage-spotlight curtain-edges min-h-screen text-champagne flex flex-col items-center justify-center p-8 relative overflow-hidden">
+            <div className="absolute top-8 left-8 foil-text font-bodoni text-2xl tracking-widest">IGNITEQUEST</div>
             <div className="absolute top-8 right-8">
                 <EventBranding className="scale-90 origin-top-right" />
             </div>
 
             {state.phase === "REGISTRATION" && (
                 <div className="flex flex-col items-center gap-10">
-                    <h1 className="text-5xl font-playfair text-prestige-gold">Registration Open</h1>
+                    <h1 className="text-5xl font-bodoni foil-text">Registration Open</h1>
                     <EventBranding className="scale-125" />
                 </div>
             )}
@@ -115,7 +115,7 @@ export function ProjectorView({ eventId, initialLeaderboard, ...initial }: Props
             )}
 
             {lifelineNotice && (
-                <div className="absolute bottom-8 text-xl text-electric-yellow font-montserrat animate-pulse">
+                <div className="absolute bottom-8 text-xl text-spotlight-amber font-montserrat uppercase tracking-widest animate-pulse">
                     {lifelineNotice}
                 </div>
             )}

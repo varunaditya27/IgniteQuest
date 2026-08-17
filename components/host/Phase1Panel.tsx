@@ -47,7 +47,7 @@ export function Phase1Panel({ gameState, teams, totalQuestions }: Props) {
     if (!question) {
         return (
             <Card>
-                <CardContent className="p-8 text-center text-ivory-white/60">
+                <CardContent className="p-8 text-center text-champagne/60">
                     Phase 1 has no more questions. Lock scores and move to finalists below.
                     <div className="mt-4">
                         <EndPhase1Button ending={ending} setEnding={setEnding} disabled={pending} />
@@ -75,7 +75,7 @@ export function Phase1Panel({ gameState, teams, totalQuestions }: Props) {
                 </CardHeader>
                 <CardContent>
                     {question.codeSnippet && (
-                        <pre className="bg-black/50 p-4 rounded mb-4 text-sm overflow-x-auto">{question.codeSnippet}</pre>
+                        <pre className="bg-stage-black-deep p-4 rounded mb-4 text-sm overflow-x-auto">{question.codeSnippet}</pre>
                     )}
                     <p className="text-xl mb-4">{question.text}</p>
                     <div className="grid grid-cols-2 gap-2 mb-6">
@@ -85,7 +85,7 @@ export function Phase1Panel({ gameState, teams, totalQuestions }: Props) {
                                 className={cn(
                                     "p-3 rounded border",
                                     i === question.correctOption
-                                        ? "border-emerald-signal bg-emerald-900/20 text-emerald-signal"
+                                        ? "border-correct-emerald bg-correct-emerald/10 text-correct-emerald"
                                         : "border-white/10"
                                 )}
                             >
@@ -95,20 +95,20 @@ export function Phase1Panel({ gameState, teams, totalQuestions }: Props) {
                     </div>
 
                     <div className="flex flex-wrap gap-3 mb-4">
-                        <Button onClick={() => run(revealCurrentQuestion)} disabled={pending || gameState.questionRevealed} className="bg-prestige-gold text-royal-black disabled:opacity-40">
+                        <Button onClick={() => run(revealCurrentQuestion)} disabled={pending || gameState.questionRevealed}>
                             Reveal
                         </Button>
-                        <Button onClick={() => run(() => recordPhase1Answer(true))} disabled={pending || !gameState.questionRevealed} className="bg-emerald-signal text-royal-black font-bold disabled:opacity-40">
+                        <Button onClick={() => run(() => recordPhase1Answer(true))} disabled={pending || !gameState.questionRevealed} variant="success">
                             Correct
                         </Button>
-                        <Button onClick={() => run(() => recordPhase1Answer(false))} disabled={pending || !gameState.questionRevealed} variant="destructive" className="font-bold disabled:opacity-40">
+                        <Button onClick={() => run(() => recordPhase1Answer(false))} disabled={pending || !gameState.questionRevealed} variant="destructive">
                             Wrong
                         </Button>
-                        <Button onClick={() => run(advanceToNextPhase1Question)} disabled={pending} className="bg-carbon-gray border border-prestige-gold/40 text-prestige-gold ml-auto disabled:opacity-40">
+                        <Button onClick={() => run(advanceToNextPhase1Question)} disabled={pending} variant="secondary" className="ml-auto">
                             Next Question →
                         </Button>
                     </div>
-                    {actionError && <p className="text-carmine-red text-sm mb-4">{actionError}</p>}
+                    {actionError && <p className="text-buzzer-red text-sm mb-4">{actionError}</p>}
 
                     <EndPhase1Button ending={ending} setEnding={setEnding} disabled={pending} />
                 </CardContent>
@@ -120,14 +120,14 @@ export function Phase1Panel({ gameState, teams, totalQuestions }: Props) {
                         <CardTitle>Active Team</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <p className="text-xs text-ivory-white/40 mb-2">
+                        <p className="text-xs text-champagne/40 mb-2">
                             Overrides this question only — round-robin picks the team again on Next Question.
                         </p>
                         <select
                             value={gameState.activeTeamId ?? ""}
                             onChange={(e) => run(() => selectActiveTeam(e.target.value))}
                             disabled={pending}
-                            className="w-full bg-royal-black border border-white/10 rounded p-2 mb-4 disabled:opacity-40"
+                            className="w-full bg-stage-black border border-white/10 rounded p-2 mb-4 disabled:opacity-40"
                         >
                             {eligibleTeams.map((t) => (
                                 <option key={t.id} value={t.id}>
@@ -180,7 +180,7 @@ function EndPhase1Button({
             >
                 {ending ? "Locking…" : "END PHASE 1 → SELECT FINALISTS"}
             </Button>
-            {error && <p className="text-carmine-red text-sm mt-2">{error}</p>}
+            {error && <p className="text-buzzer-red text-sm mt-2">{error}</p>}
         </div>
     );
 }

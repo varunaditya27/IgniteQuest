@@ -39,7 +39,7 @@ export function Phase2Panel({ gameState, teams, phase2Questions }: Props) {
                     {finalists.map((t) => (
                         <div key={t.id} className="font-montserrat">{t.name} — PIN {t.pin}</div>
                     ))}
-                    <p className="text-ivory-white/40 text-sm mt-2">
+                    <p className="text-champagne/40 text-sm mt-2">
                         No live leaderboard is shown during Phase 2 — this list is host-only.
                     </p>
                 </CardContent>
@@ -63,10 +63,10 @@ export function Phase2Panel({ gameState, teams, phase2Questions }: Props) {
                         const alreadyShown = q.presentedAt !== null;
                         return (
                             <div key={q.id} className="flex items-center justify-between border-b border-white/5 py-2">
-                                <span className={alreadyShown && !isLive ? "text-ivory-white/30" : ""}>
+                                <span className={alreadyShown && !isLive ? "text-champagne/30" : ""}>
                                     Q{q.order}. {q.text.slice(0, 40)}
                                 </span>
-                                <span className="text-xs text-ivory-white/50 font-montserrat uppercase">
+                                <span className="text-xs text-champagne/50 font-montserrat uppercase">
                                     {isLive ? "Live" : alreadyShown ? "Shown" : "Upcoming"}
                                 </span>
                             </div>
@@ -78,7 +78,6 @@ export function Phase2Panel({ gameState, teams, phase2Questions }: Props) {
                             <Button
                                 onClick={() => run(startNextPhase2Question)}
                                 disabled={pending || (!!gameState.currentQuestion && !gameState.answerLocked)}
-                                className="bg-prestige-gold text-royal-black disabled:opacity-40"
                             >
                                 Start Next Question
                             </Button>
@@ -88,7 +87,6 @@ export function Phase2Panel({ gameState, teams, phase2Questions }: Props) {
                                 onClick={() => run(lockPhase2Question)}
                                 disabled={pending || gameState.answerLocked}
                                 variant="outline"
-                                className="border-white/20 text-white disabled:opacity-40"
                             >
                                 Lock Answers
                             </Button>
@@ -105,7 +103,7 @@ export function Phase2Panel({ gameState, teams, phase2Questions }: Props) {
                     <Button
                         variant="outline"
                         disabled={pending}
-                        className="border-white/20 text-white mb-4 disabled:opacity-40"
+                        className="mb-4"
                         onClick={() => run(async () => setStandings(await computeFinalStandings()))}
                     >
                         Refresh Standings
@@ -133,7 +131,7 @@ export function Phase2Panel({ gameState, teams, phase2Questions }: Props) {
                             REVEAL FINALE
                         </Button>
                     )}
-                    {actionError && <p className="text-carmine-red text-sm mt-2">{actionError}</p>}
+                    {actionError && <p className="text-buzzer-red text-sm mt-2">{actionError}</p>}
                 </CardContent>
             </Card>
         </div>

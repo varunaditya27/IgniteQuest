@@ -38,13 +38,13 @@ export function HostConsole({ eventId, initialGameState, initialTeams, phase1Que
     const teams = initialTeams;
 
     return (
-        <main className="min-h-screen bg-royal-black p-6 text-ivory-white">
-            <header className="flex items-center justify-between mb-6">
-                <h1 className="text-2xl font-playfair font-bold text-prestige-gold">Host Console</h1>
+        <main className="min-h-screen bg-stage-black p-6 text-champagne">
+            <header className="flex items-center justify-between mb-6 pb-4 border-b border-foil-gold/15">
+                <h1 className="text-2xl font-bodoni font-bold foil-text">Host Console</h1>
                 <div className="flex items-center gap-4">
-                    <span className="text-sm text-ivory-white/50 font-montserrat">Phase: {gameState.phase}</span>
+                    <span className="text-xs text-champagne/50 font-montserrat tracking-widest uppercase">Phase: {gameState.phase}</span>
                     <form action={hostLogout}>
-                        <button className="text-sm text-ivory-white/50 hover:text-carmine-red underline">
+                        <button className="text-sm text-champagne/50 hover:text-buzzer-red underline">
                             Log out
                         </button>
                     </form>

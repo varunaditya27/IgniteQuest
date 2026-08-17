@@ -15,15 +15,15 @@ export function Phase1ScoresList({ teams }: { teams: TeamForHost[] }) {
                 <CardTitle>Scores</CardTitle>
             </CardHeader>
             <CardContent className="space-y-1">
-                <p className="text-xs text-ivory-white/40 mb-2">
+                <p className="text-xs text-champagne/40 mb-2">
                     Ordered as finalists will be: score, then cumulative time as tiebreaker.
                 </p>
                 {ranked.map((t) => (
                     <div key={t.id} className="flex justify-between items-baseline font-montserrat">
-                        <span className={t.eliminated ? "text-ivory-white/30 line-through" : ""}>{t.name}</span>
+                        <span className={t.eliminated ? "text-champagne/30 line-through" : ""}>{t.name}</span>
                         <span className="flex items-baseline gap-2">
-                            <span className="text-ivory-white/40 text-xs">{(t.totalMs / 1000).toFixed(1)}s</span>
-                            <span className="text-prestige-gold font-bold">{t.score}</span>
+                            <span className="text-champagne/40 text-xs">{(t.totalMs / 1000).toFixed(1)}s</span>
+                            <span className="font-anton text-foil-gold-bright">{t.score}</span>
                         </span>
                     </div>
                 ))}

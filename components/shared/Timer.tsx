@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { cn } from "@/lib/utils";
 
 export function Timer({ startedAt, limitSeconds }: { startedAt: string; limitSeconds: number }) {
     const [remaining, setRemaining] = useState(limitSeconds);
@@ -21,8 +22,17 @@ export function Timer({ startedAt, limitSeconds }: { startedAt: string; limitSec
     const isLow = remaining <= 5;
 
     return (
-        <div className={`text-6xl font-bebas text-center ${isLow ? "text-carmine-red animate-pulse" : "text-prestige-gold"}`}>
-            {String(minutes).padStart(2, "0")}:{String(seconds).padStart(2, "0")}
+        <div
+            className={cn(
+                "inline-flex items-baseline gap-1 rounded-md border px-6 py-2 font-anton text-6xl tabular-nums shadow-[inset_0_2px_8px_rgba(0,0,0,0.6)] transition-colors",
+                isLow
+                    ? "border-buzzer-red/50 bg-crimson-deep/40 text-buzzer-red animate-pulse"
+                    : "border-foil-gold/30 bg-stage-black-deep text-foil-gold-bright"
+            )}
+        >
+            <span className="drop-shadow-[0_0_10px_currentColor]">
+                {String(minutes).padStart(2, "0")}:{String(seconds).padStart(2, "0")}
+            </span>
         </div>
     );
 }

@@ -50,24 +50,20 @@ export function HostLoginForm() {
                             onChange={(e) => setPassword(e.target.value)}
                             required
                             autoFocus
-                            className="bg-royal-black border-white/10 text-ivory-white pr-10"
+                            className="pr-10"
                         />
                         <button
                             type="button"
                             onClick={() => setShowPassword((v) => !v)}
                             aria-label={showPassword ? "Hide password" : "Show password"}
-                            className="absolute inset-y-0 right-0 flex items-center px-3 text-ivory-white/50 hover:text-ivory-white"
+                            className="absolute inset-y-0 right-0 flex items-center px-3 text-champagne/50 hover:text-champagne"
                         >
                             {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                         </button>
                     </div>
-                    {error && <p className="text-carmine-red text-sm">{error}</p>}
-                    <Button
-                        type="submit"
-                        disabled={pending}
-                        className="w-full bg-prestige-gold text-royal-black hover:bg-electric-yellow font-bold"
-                    >
-                        {pending ? "Checking…" : "ENTER"}
+                    {error && <p className="text-buzzer-red text-sm">{error}</p>}
+                    <Button type="submit" disabled={pending} className="w-full">
+                        {pending ? "Checking…" : "Enter"}
                     </Button>
                 </form>
             </CardContent>

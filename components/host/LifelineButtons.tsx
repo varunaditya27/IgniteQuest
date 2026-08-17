@@ -38,14 +38,13 @@ export function LifelineButtons({ usedTypes, disabled }: { usedTypes: LifelineTy
                                     setPending(null);
                                 }
                             }}
-                            className="border-white/20 text-white disabled:opacity-30"
                         >
                             {used ? `${l.label} ✓` : l.label}
                         </Button>
                     );
                 })}
             </div>
-            {error && <p className="text-carmine-red text-sm mt-2">{error}</p>}
+            {error && <p className="text-buzzer-red text-sm mt-2">{error}</p>}
         </div>
     );
 }

@@ -8,6 +8,7 @@ import { teamLogout } from "@/lib/actions/auth";
 import { Button } from "@/components/ui/Button";
 import { Timer } from "@/components/shared/Timer";
 import { gameConfig } from "@/lib/config";
+import { cn } from "@/lib/utils";
 import type { PublicQuestion } from "@/lib/realtime/events";
 import type { GamePhase } from "@prisma/client";
 
@@ -106,44 +107,42 @@ function QuestionAnswerForm({
     }
 
     return (
-        <main className="min-h-screen bg-royal-black text-ivory-white flex flex-col items-center justify-center p-4 gap-6">
-            <p className="text-prestige-gold font-montserrat">{teamName}</p>
+        <main className="stage-spotlight min-h-screen text-champagne flex flex-col items-center justify-center p-4 gap-6">
+            <p className="text-foil-gold-bright font-montserrat tracking-widest uppercase text-sm">{teamName}</p>
             {startedAt && (
                 <Timer startedAt={startedAt} limitSeconds={question.timeLimitSeconds ?? gameConfig.phase2TimeLimitSeconds} />
             )}
             {question.codeSnippet && (
-                <pre className="bg-black/50 p-3 rounded text-sm w-full max-w-md overflow-x-auto">{question.codeSnippet}</pre>
+                <pre className="bg-stage-black-deep p-3 rounded text-sm w-full max-w-md overflow-x-auto border border-white/5">{question.codeSnippet}</pre>
             )}
-            <p className="text-xl text-center">{question.text}</p>
+            <p className="text-xl text-center font-bodoni">{question.text}</p>
             <div className="grid grid-cols-1 gap-3 w-full max-w-md">
                 {question.options.map((opt, i) => (
                     <Button
                         key={i}
+                        size="lg"
                         disabled={locked}
                         onClick={() => handleSubmit(i)}
-                        className={
-                            selected === i
-                                ? "bg-prestige-gold text-royal-black font-bold"
-                                : "bg-carbon-gray border border-white/10 text-ivory-white"
-                        }
+                        variant={selected === i ? "default" : "secondary"}
+                        className={cn("justify-start text-left normal-case font-archivo font-normal text-base")}
                     >
-                        {String.fromCharCode(65 + i)}. {opt}
+                        <span className="font-anton mr-2">{String.fromCharCode(65 + i)}</span> {opt}
                     </Button>
                 ))}
             </div>
-            {error && <p className="text-carmine-red text-sm">{error}</p>}
-            {submitted && <p className="text-emerald-signal font-bold">Answer locked in!</p>}
+            {error && <p className="text-buzzer-red text-sm">{error}</p>}
+            {submitted && <p className="text-correct-emerald font-bold">Answer locked in!</p>}
         </main>
     );
 }
 
 function StatusScreen({ teamName, message }: { teamName: string; message: string }) {
     return (
-        <main className="min-h-screen bg-royal-black text-ivory-white flex flex-col items-center justify-center p-4 gap-4 text-center">
-            <p className="text-prestige-gold font-montserrat">{teamName}</p>
-            <p className="text-xl text-ivory-white/70">{message}</p>
+        <main className="stage-spotlight min-h-screen text-champagne flex flex-col items-center justify-center p-4 gap-4 text-center">
+            <p className="text-foil-gold-bright font-montserrat tracking-widest uppercase text-sm">{teamName}</p>
+            <p className="text-xl text-champagne/70 font-bodoni">{message}</p>
             <form action={teamLogout}>
-                <button className="text-sm text-ivory-white/40 underline mt-8">Log out</button>
+                <button className="text-sm text-champagne/40 underline mt-8">Log out</button>
             </form>
         </main>
     );

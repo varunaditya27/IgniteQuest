@@ -2,9 +2,9 @@ import { RegisterForm } from "@/components/shared/RegisterForm";
 
 export default function RegisterPage() {
     return (
-        <main className="flex min-h-screen flex-col items-center justify-center bg-royal-black p-4">
-            <h1 className="text-3xl md:text-4xl font-playfair font-bold text-prestige-gold mb-8 text-center">
-                IgniteQuest — Team Registration
+        <main className="stage-spotlight flex min-h-screen flex-col items-center justify-center p-4">
+            <h1 className="text-3xl md:text-4xl font-bodoni font-bold foil-text mb-8 text-center">
+                IgniteQuest &mdash; Team Registration
             </h1>
             <RegisterForm />
         </main>

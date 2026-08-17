@@ -39,14 +39,14 @@ export function RegisterForm() {
                     <CardTitle>You&apos;re Registered!</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                    <p className="font-montserrat text-ivory-white/80">
-                        Team <span className="text-prestige-gold font-bold">{result.teamName}</span> is in.
+                    <p className="font-montserrat text-champagne/80">
+                        Team <span className="text-foil-gold-bright font-bold">{result.teamName}</span> is in.
                     </p>
-                    <p className="text-ivory-white/60 text-sm">
+                    <p className="text-champagne/60 text-sm">
                         Save this PIN — you&apos;ll need it to log in for the Final Sprint if your team qualifies.
                         Put your phone away now; the arena is host-controlled.
                     </p>
-                    <div className="text-5xl font-bebas tracking-[0.3em] text-prestige-gold py-4 border-2 border-prestige-gold/30 rounded-lg">
+                    <div className="text-5xl font-anton tracking-[0.3em] text-foil-gold-bright py-4 border border-foil-gold/30 rounded-lg bg-stage-black-deep shadow-[inset_0_2px_8px_rgba(0,0,0,0.6)]">
                         {result.pin}
                     </div>
                 </CardContent>
@@ -62,32 +62,26 @@ export function RegisterForm() {
             <CardContent>
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div>
-                        <label className="block text-sm text-ivory-white/70 mb-1 font-montserrat">Team Name</label>
+                        <label className="block text-sm text-champagne/70 mb-1 font-montserrat">Team Name</label>
                         <Input
                             value={teamName}
                             onChange={(e) => setTeamName(e.target.value)}
                             required
                             maxLength={40}
-                            className="bg-royal-black border-white/10 text-ivory-white"
                         />
                     </div>
                     <div>
-                        <label className="block text-sm text-ivory-white/70 mb-1 font-montserrat">Team Leader Name</label>
+                        <label className="block text-sm text-champagne/70 mb-1 font-montserrat">Team Leader Name</label>
                         <Input
                             value={leaderName}
                             onChange={(e) => setLeaderName(e.target.value)}
                             required
                             maxLength={40}
-                            className="bg-royal-black border-white/10 text-ivory-white"
                         />
                     </div>
-                    {error && <p className="text-carmine-red text-sm">{error}</p>}
-                    <Button
-                        type="submit"
-                        disabled={pending}
-                        className="w-full bg-prestige-gold text-royal-black hover:bg-electric-yellow font-bold"
-                    >
-                        {pending ? "Registering…" : "REGISTER TEAM"}
+                    {error && <p className="text-buzzer-red text-sm">{error}</p>}
+                    <Button type="submit" disabled={pending} className="w-full">
+                        {pending ? "Registering…" : "Register Team"}
                     </Button>
                 </form>
             </CardContent>

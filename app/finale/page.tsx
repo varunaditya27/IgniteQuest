@@ -11,13 +11,11 @@ export default async function FinalePage() {
 
     if (gameState.phase !== "FINALE") {
         return (
-            <main className="flex min-h-screen flex-col items-center justify-center bg-royal-black text-center p-4">
-                <h1 className="text-3xl font-playfair text-prestige-gold mb-4">Results Not Revealed Yet</h1>
-                <p className="text-ivory-white/60 mb-8">The finale will appear here once the host reveals it.</p>
+            <main className="stage-spotlight flex min-h-screen flex-col items-center justify-center text-center p-4">
+                <h1 className="text-3xl font-bodoni foil-text mb-4">Results Not Revealed Yet</h1>
+                <p className="text-champagne/60 mb-8">The finale will appear here once the host reveals it.</p>
                 <Link href="/">
-                    <Button variant="outline" className="border-white/20 text-white/50">
-                        RETURN TO HOME
-                    </Button>
+                    <Button variant="ghost">Return to Home</Button>
                 </Link>
             </main>
         );

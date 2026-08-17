@@ -20,10 +20,10 @@ export function RegistrationPanel({ teams, hasQuestions }: { teams: TeamForHost[
                     {teams.map((t) => (
                         <div key={t.id} className="flex justify-between border-b border-white/5 py-2 font-montserrat">
                             <span>{t.name}</span>
-                            <span className="text-ivory-white/50">{t.leaderName}</span>
+                            <span className="text-champagne/50">{t.leaderName}</span>
                         </div>
                     ))}
-                    {teams.length === 0 && <p className="text-ivory-white/40">No teams registered yet.</p>}
+                    {teams.length === 0 && <p className="text-champagne/40">No teams registered yet.</p>}
                 </CardContent>
             </Card>
 
@@ -32,7 +32,7 @@ export function RegistrationPanel({ teams, hasQuestions }: { teams: TeamForHost[
                     <CardTitle>Start the Arena</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <p className="text-ivory-white/60 mb-4">
+                    <p className="text-champagne/60 mb-4">
                         Once every team has registered and phones are away, start Phase 1.
                     </p>
                     <Button
@@ -47,11 +47,11 @@ export function RegistrationPanel({ teams, hasQuestions }: { teams: TeamForHost[
                                 setStarting(false);
                             }
                         }}
-                        className="w-full bg-prestige-gold text-royal-black hover:bg-electric-yellow font-bold"
+                        className="w-full"
                     >
-                        {starting ? "Starting…" : "START PHASE 1"}
+                        {starting ? "Starting…" : "Start Phase 1"}
                     </Button>
-                    {error && <p className="text-carmine-red text-sm mt-2">{error}</p>}
+                    {error && <p className="text-buzzer-red text-sm mt-2">{error}</p>}
                 </CardContent>
             </Card>
         </div>

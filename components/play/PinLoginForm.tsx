@@ -45,15 +45,11 @@ export function PinLoginForm() {
                         maxLength={6}
                         required
                         autoFocus
-                        className="bg-royal-black border-white/10 text-ivory-white text-center text-2xl tracking-[0.3em]"
+                        className="text-center text-2xl tracking-[0.3em] font-anton"
                     />
-                    {error && <p className="text-carmine-red text-sm">{error}</p>}
-                    <Button
-                        type="submit"
-                        disabled={pending}
-                        className="w-full bg-prestige-gold text-royal-black hover:bg-electric-yellow font-bold"
-                    >
-                        {pending ? "Checking…" : "ENTER"}
+                    {error && <p className="text-buzzer-red text-sm">{error}</p>}
+                    <Button type="submit" disabled={pending} className="w-full">
+                        {pending ? "Checking…" : "Enter"}
                     </Button>
                 </form>
             </CardContent>

@@ -12,7 +12,7 @@ export default async function PlayPage() {
 
     if (!teamId) {
         return (
-            <main className="flex min-h-screen flex-col items-center justify-center bg-royal-black p-4">
+            <main className="stage-spotlight flex min-h-screen flex-col items-center justify-center p-4">
                 <PinLoginForm />
             </main>
         );
@@ -29,11 +29,11 @@ export default async function PlayPage() {
     // misleading right up until that rejection. Gate it here instead.
     if (team.eliminated) {
         return (
-            <main className="flex min-h-screen flex-col items-center justify-center bg-royal-black p-4 gap-4 text-center">
-                <p className="text-prestige-gold font-montserrat">{team.name}</p>
-                <p className="text-xl text-ivory-white/70">This team did not qualify for the Final Sprint.</p>
+            <main className="stage-spotlight flex min-h-screen flex-col items-center justify-center p-4 gap-4 text-center">
+                <p className="text-foil-gold-bright font-montserrat tracking-widest uppercase text-sm">{team.name}</p>
+                <p className="text-xl text-champagne/70 font-bodoni">This team did not qualify for the Final Sprint.</p>
                 <form action={teamLogout}>
-                    <button className="text-sm text-ivory-white/40 underline mt-4">Log out</button>
+                    <button className="text-sm text-champagne/40 underline mt-4">Log out</button>
                 </form>
             </main>
         );

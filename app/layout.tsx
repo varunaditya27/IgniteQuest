@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { playfair, montserrat, sourceSans } from "./fonts";
+import { bodoni, anton, montserrat, archivo } from "./fonts";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -13,8 +13,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${playfair.variable} ${montserrat.variable} ${sourceSans.variable}`}>
-      <body className="antialiased bg-royal-black text-ivory-white font-source-sans">
+    <html lang="en" className={`${bodoni.variable} ${anton.variable} ${montserrat.variable} ${archivo.variable}`}>
+      <body className="antialiased bg-stage-black text-champagne font-archivo">
+        <div className="grain-overlay" aria-hidden="true" />
         {children}
       </body>
     </html>

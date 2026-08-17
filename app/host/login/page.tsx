@@ -8,7 +8,7 @@ export default async function HostLoginPage() {
     }
 
     return (
-        <main className="flex min-h-screen flex-col items-center justify-center bg-royal-black p-4">
+        <main className="stage-spotlight flex min-h-screen flex-col items-center justify-center p-4">
             <HostLoginForm />
         </main>
     );
