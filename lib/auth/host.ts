@@ -1,6 +1,6 @@
 import "server-only";
 import { cookies } from "next/headers";
-import { timingSafeEqual } from "crypto";
+import { createHash, timingSafeEqual } from "crypto";
 import { env } from "@/lib/env";
 import { createSessionToken, verifySessionToken } from "@/lib/auth/session";
 
@@ -8,10 +8,14 @@ const COOKIE_NAME = "iq_host_session";
 
 type HostSessionPayload = { role: "host"; exp: number };
 
+function sha256(value: string) {
+    return createHash("sha256").update(value).digest();
+}
+
+// Hashing first (rather than comparing raw buffers) means both sides are always the
+// same fixed length, so there's no length check to short-circuit on and leak timing.
 export function checkHostPassword(password: string): boolean {
-    const expected = Buffer.from(env.hostPassword);
-    const given = Buffer.from(password);
-    return expected.length === given.length && timingSafeEqual(expected, given);
+    return timingSafeEqual(sha256(env.hostPassword), sha256(password));
 }
 
 export async function createHostSession() {

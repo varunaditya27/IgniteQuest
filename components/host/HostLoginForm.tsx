@@ -24,7 +24,6 @@ export function HostLoginForm() {
             return;
         }
         router.push("/host");
-        router.refresh();
     }
 
     return (
@@ -36,6 +35,8 @@ export function HostLoginForm() {
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <Input
                         type="password"
+                        name="password"
+                        autoComplete="current-password"
                         placeholder="Host password"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
