@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui/Button";
 import { motion } from "framer-motion";
 import Link from "next/link";
+import { EventBranding } from "@/components/shared/EventBranding";
 
 export default function Home() {
   return (
@@ -39,20 +40,30 @@ export default function Home() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.8, duration: 0.6 }}
+          className="flex flex-col sm:flex-row gap-4"
         >
-          <Link href="/quiz">
+          <Link href="/register">
             <Button
               size="lg"
-              className="text-lg px-12 py-8 rounded-full bg-prestige-gold text-royal-black hover:bg-electric-yellow hover:scale-105 transition-all duration-300 shadow-[0_0_20px_rgba(245,197,66,0.3)] font-bold tracking-wide"
+              className="text-lg px-10 py-7 rounded-full bg-prestige-gold text-royal-black hover:bg-electric-yellow hover:scale-105 transition-all duration-300 shadow-[0_0_20px_rgba(245,197,66,0.3)] font-bold tracking-wide"
             >
-              ENTER THE ARENA
+              REGISTER YOUR TEAM
+            </Button>
+          </Link>
+          <Link href="/host/login">
+            <Button
+              size="lg"
+              variant="outline"
+              className="text-lg px-10 py-7 rounded-full border-prestige-gold/40 text-prestige-gold hover:bg-prestige-gold/10 font-bold tracking-wide"
+            >
+              HOST CONSOLE
             </Button>
           </Link>
         </motion.div>
       </div>
 
-      <footer className="absolute bottom-8 text-sm text-gray-500 font-source-sans">
-        Powered by RVCE Coding Club
+      <footer className="absolute bottom-10">
+        <EventBranding />
       </footer>
     </main>
   );
