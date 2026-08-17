@@ -3,7 +3,9 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
-import { startPhase2Question, lockPhase2Question, computeFinalStandings, revealFinale } from "@/lib/actions/host-phase2";
+import { Timer } from "@/components/shared/Timer";
+import { startNextPhase2Question, lockPhase2Question, computeFinalStandings, revealFinale } from "@/lib/actions/host-phase2";
+import { gameConfig } from "@/lib/config";
 import type { FastestFingersResult } from "@/lib/game/scoring";
 import type { GameStateWithRelations, TeamForHost, QuestionRow } from "@/components/host/HostConsole";
 
@@ -44,8 +46,16 @@ export function Phase2Panel({ gameState, teams, phase2Questions }: Props) {
             </Card>
 
             <Card>
-                <CardHeader>
+                <CardHeader className="flex flex-row items-center justify-between">
                     <CardTitle>Questions</CardTitle>
+                    {gameState.currentQuestion && gameState.questionStartedAt && !gameState.answerLocked && (
+                        <div className="scale-50 origin-right">
+                            <Timer
+                                startedAt={gameState.questionStartedAt.toISOString()}
+                                limitSeconds={gameState.currentQuestion.timeLimitSeconds ?? gameConfig.phase2TimeLimitSeconds}
+                            />
+                        </div>
+                    )}
                 </CardHeader>
                 <CardContent className="space-y-2">
                     {phase2Questions.map((q) => {
@@ -56,27 +66,32 @@ export function Phase2Panel({ gameState, teams, phase2Questions }: Props) {
                                 <span className={alreadyShown && !isLive ? "text-ivory-white/30" : ""}>
                                     Q{q.order}. {q.text.slice(0, 40)}
                                 </span>
-                                <Button
-                                    size="sm"
-                                    onClick={() => run(() => startPhase2Question(q.order))}
-                                    disabled={pending || alreadyShown}
-                                    className="bg-prestige-gold text-royal-black disabled:opacity-40"
-                                >
-                                    {isLive ? "Live" : alreadyShown ? "Shown" : "Start"}
-                                </Button>
+                                <span className="text-xs text-ivory-white/50 font-montserrat uppercase">
+                                    {isLive ? "Live" : alreadyShown ? "Shown" : "Upcoming"}
+                                </span>
                             </div>
                         );
                     })}
-                    {gameState.currentQuestion && (
+
+                    <div className="flex gap-3 mt-4">
                         <Button
-                            onClick={() => run(lockPhase2Question)}
-                            disabled={pending || gameState.answerLocked}
-                            variant="outline"
-                            className="border-white/20 text-white mt-2 disabled:opacity-40"
+                            onClick={() => run(startNextPhase2Question)}
+                            disabled={pending || (!!gameState.currentQuestion && !gameState.answerLocked)}
+                            className="bg-prestige-gold text-royal-black disabled:opacity-40"
                         >
-                            Lock Answers
+                            Start Next Question
                         </Button>
-                    )}
+                        {gameState.currentQuestion && (
+                            <Button
+                                onClick={() => run(lockPhase2Question)}
+                                disabled={pending || gameState.answerLocked}
+                                variant="outline"
+                                className="border-white/20 text-white disabled:opacity-40"
+                            >
+                                Lock Answers
+                            </Button>
+                        )}
+                    </div>
                 </CardContent>
             </Card>
 

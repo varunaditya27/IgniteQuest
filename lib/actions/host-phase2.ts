@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { env } from "@/lib/env";
 import { GamePhase } from "@prisma/client";
 import { requireHost } from "@/lib/actions/guard";
-import { getGameStateWithRelations, getPhaseQuestionsInOrder, getFinalStandings } from "@/lib/game/queries";
+import { getGameStateWithRelations, getUnusedQuestions, getFinalStandings } from "@/lib/game/queries";
 import type { FastestFingersResult } from "@/lib/game/scoring";
 import { toGameStateEvent } from "@/lib/game/sanitize";
 import { broadcast } from "@/lib/realtime/broadcast";
@@ -14,15 +14,15 @@ async function broadcastState() {
     await broadcast(env.eventId, toGameStateEvent(state));
 }
 
-export async function startPhase2Question(order: number) {
+// Always the lowest-order not-yet-shown Phase 2 question — strictly sequential, no
+// picking out of order. A question already marked presentedAt can never be reopened:
+// that would let teams who hadn't answered yet answer late, out of sync with everyone
+// else, which defeats the point of Fastest Fingers (gpt-chat-reference.md section
+// 8.1), so there's nothing to guard against re-showing beyond just not selecting it.
+export async function startNextPhase2Question() {
     await requireHost();
-    const questions = await getPhaseQuestionsInOrder(env.eventId, "PHASE_2");
-    const question = questions.find((q) => q.order === order);
-    if (!question) throw new Error(`No Phase 2 question with order ${order}.`);
-    // Re-opening an already-shown question would let teams who hadn't answered yet
-    // answer late, out of sync with everyone else — "everyone starts together" is the
-    // whole point of Fastest Fingers (gpt-chat-reference.md section 8.1).
-    if (question.presentedAt) throw new Error("This question has already been shown and cannot be restarted.");
+    const [question] = await getUnusedQuestions(env.eventId, "PHASE_2");
+    if (!question) throw new Error("No more Phase 2 questions.");
 
     await prisma.$transaction(async (tx) => {
         await tx.question.update({ where: { id: question.id }, data: { presentedAt: new Date() } });
