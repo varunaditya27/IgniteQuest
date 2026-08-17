@@ -26,7 +26,13 @@ export function HostConsole({ eventId, initialGameState, initialTeams, phase1Que
     // Any broadcast (including ones this console caused) means server state
     // moved on — re-fetch the server component so the host always sees the
     // full row data (e.g. correctOption), not the sanitized public payload.
-    useGameChannel(eventId, () => router.refresh());
+    // Also refresh on every (re)connect: broadcast has no replay, so a host laptop
+    // that drops WiFi for a moment must still end up consistent, not stuck stale.
+    useGameChannel(
+        eventId,
+        () => router.refresh(),
+        () => router.refresh()
+    );
 
     const gameState = initialGameState;
     const teams = initialTeams;

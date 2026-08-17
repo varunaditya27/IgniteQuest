@@ -3,45 +3,71 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useGameChannel } from "@/hooks/useGameChannel";
+import { getPublicSnapshot } from "@/lib/actions/queries";
 import { QuestionDisplay } from "@/components/projector/QuestionDisplay";
 import { Timer } from "@/components/shared/Timer";
 import { Leaderboard } from "@/components/shared/Leaderboard";
 import { EventBranding } from "@/components/shared/EventBranding";
 import { gameConfig } from "@/lib/config";
 import type { GamePhase } from "@prisma/client";
-import type { PublicQuestion } from "@/lib/realtime/events";
+import type { GameStateEvent, PublicQuestion } from "@/lib/realtime/events";
 
-type Props = {
-    eventId: string;
+type LiveState = {
     phase: GamePhase;
     question: PublicQuestion | null;
     activeTeam: { id: string; name: string } | null;
     questionRevealed: boolean;
     questionStartedAt: string | null;
     hiddenOptions: number[];
+};
+
+type Props = LiveState & {
+    eventId: string;
     initialLeaderboard: { id: string; name: string; score: number }[];
 };
 
-export function ProjectorView(props: Props) {
+function toState(payload: GameStateEvent["payload"]): LiveState {
+    return {
+        phase: payload.phase,
+        question: payload.currentQuestion,
+        activeTeam: payload.activeTeam,
+        questionRevealed: payload.questionRevealed,
+        questionStartedAt: payload.questionStartedAt,
+        hiddenOptions: payload.hiddenOptions,
+    };
+}
+
+export function ProjectorView({ eventId, initialLeaderboard, ...initial }: Props) {
     const router = useRouter();
-    const [state, setState] = useState(props);
-    const [leaderboard, setLeaderboard] = useState(props.initialLeaderboard);
+    const [state, setState] = useState<LiveState>(initial);
+    const [leaderboard, setLeaderboard] = useState(initialLeaderboard);
     const [revealedAnswer, setRevealedAnswer] = useState<{ questionId: string; correctOption: number } | null>(null);
     const [lifelineNotice, setLifelineNotice] = useState<string | null>(null);
 
-    useGameChannel(props.eventId, (event) => {
-        if (event.type === "GAME_STATE_CHANGED") {
-            setState((prev) => ({ ...prev, ...event.payload }));
-            if (event.payload.currentQuestion?.id !== state.question?.id) setRevealedAnswer(null);
-        } else if (event.type === "SCORE_UPDATED") {
-            setLeaderboard(event.payload.teams);
-        } else if (event.type === "ANSWER_REVEALED") {
-            setRevealedAnswer(event.payload);
-        } else if (event.type === "LIFELINE_USED") {
-            setLifelineNotice(`Lifeline used: ${event.payload.lifeline.replace("_", " ")}`);
-            setTimeout(() => setLifelineNotice(null), 4000);
+    useGameChannel(
+        eventId,
+        (event) => {
+            if (event.type === "GAME_STATE_CHANGED") {
+                setState(toState(event.payload));
+                if (event.payload.currentQuestion?.id !== state.question?.id) setRevealedAnswer(null);
+            } else if (event.type === "SCORE_UPDATED") {
+                setLeaderboard(event.payload.teams);
+            } else if (event.type === "ANSWER_REVEALED") {
+                setRevealedAnswer(event.payload);
+            } else if (event.type === "LIFELINE_USED") {
+                setLifelineNotice(`Lifeline used: ${event.payload.lifeline.replace("_", " ")}`);
+                setTimeout(() => setLifelineNotice(null), 4000);
+            }
+        },
+        async () => {
+            // Resync on connect/reconnect — broadcast is fire-and-forget, so this is the
+            // only way to recover from a missed message after a network drop.
+            const snapshot = await getPublicSnapshot();
+            setState(toState(snapshot));
+            setLeaderboard(snapshot.leaderboard);
+            setRevealedAnswer(null);
         }
-    });
+    );
 
     useEffect(() => {
         if (state.phase === "FINALE") router.push("/finale");
