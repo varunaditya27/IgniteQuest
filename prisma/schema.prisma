@@ -15,7 +15,6 @@ enum GamePhase {
   PHASE_1
   PHASE_2
   FINALE
-  COMPLETE
 }
 
 enum QuestionPhase {

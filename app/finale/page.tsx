@@ -9,7 +9,7 @@ export const dynamic = "force-dynamic";
 export default async function FinalePage() {
     const gameState = await getGameStateWithRelations(env.eventId);
 
-    if (gameState.phase !== "FINALE" && gameState.phase !== "COMPLETE") {
+    if (gameState.phase !== "FINALE") {
         return (
             <main className="flex min-h-screen flex-col items-center justify-center bg-royal-black text-center p-4">
                 <h1 className="text-3xl font-playfair text-prestige-gold mb-4">Results Not Revealed Yet</h1>
