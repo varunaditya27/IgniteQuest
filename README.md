@@ -1,209 +1,118 @@
-# ✨ IgniteQuest — The Ultimate Live Quiz Orchestration Platform
+# IgniteQuest — Python Arena
 
-IgniteQuest is a premium, stage-ready quiz management system purpose-built for live school outreach events where the audience has **no devices**. Entirely controlled by the quizmaster from a single laptop, IgniteQuest transforms a simple quiz into a cinematic, high-energy experience with dynamic visuals, real-time scoring, and a polished finale reveal.
+A host-controlled, KBC-inspired live quiz platform for the RVCE Coding Club × RVITM Python bootcamp.
 
-This platform replaces traditional PPTs, manual score sheets, and basic displays with a modern, animated, and professional interface that runs fully on **Next.js + PostgreSQL (Dockerised)** on **localhost**.
+Full product vision, game rules, and data model rationale live in
+[`gpt-chat-reference.md`](./gpt-chat-reference.md) — read that first. Contributor rules
+(file size limits, no AI slop, modularity) live in [`CLAUDE.md`](./CLAUDE.md).
 
----
+## What this is
 
-## 🚀 Features at a Glance
+A two-phase game show:
 
-* 🎛 **Landing Screen** — A stunning welcome page acting as a pre-event placeholder.
-* 🧠 **Question Display System** — Beautifully crafted quiz cards with options.
-* 🎯 **Answer Reveal Button** — Highlights the correct option instantly.
-* 🧍‍♂️🧍‍♀️ **Participant Manager** — Search participants and apply +4 / -2 scoring.
-* 📊 **Real-Time Leaderboard** — Always visible, animated, and auto-sorting.
-* 🥇 **Winners Finale Screen** — Displays top 3 with celebration animations.
-* 🎨 **Royal Black-Gold Theme** — Aesthetic, sleek, and stage-ready.
-* ⚡ **Local Offline Operation** — No internet dependency.
-* 🗃 **Postgres-Powered** — Fast, reliable score syncing.
+- **Phase 1 — Main Arena**: all registered teams compete round-robin, host-controlled,
+  with four lifelines (50:50, Ask the Audience, Ask the Expert, Switch Question) and a
+  live public leaderboard on the projector.
+- **Phase 2 — Fastest Fingers**: the top finalists answer the same questions
+  simultaneously from their phones. No live leaderboard — results stay hidden until the
+  host reveals the finale.
 
----
+Three separate surfaces:
 
-## 🎯 Purpose of IgniteQuest
+- `/host` — host console (password-protected). Controls everything.
+- `/projector` — public display screen. No admin controls, no correct answers exposed
+  before reveal.
+- `/register` and `/play` — team leader's phone. Registration before Phase 1, PIN login
+  and answering during Phase 2.
+- `/finale` — championship reveal, gated until the host explicitly reveals it.
 
-IgniteQuest is designed for **live school quiz events** run by the RVCE Coding Club (or any similar organisation). These events happen in auditoriums where:
+## Tech stack
 
-* Students have **no phones or laptops**.
-* Only the host controls the quiz.
-* Projectors display content to the audience.
+- Next.js (App Router) + React + TypeScript
+- Prisma ORM against Postgres (Supabase-hosted in production, local Docker Postgres for dev)
+- Supabase Realtime (broadcast channels only — see "Realtime" below) for pushing live
+  updates to host/projector/team screens
+- Framer Motion for presentation animations
+- Tailwind CSS v4
 
-IgniteQuest provides:
+## Local setup
 
-* A modern replacement for PowerPoint,
-* A built-in scoring system,
-* A show-like leaderboard,
-* And a clean, reliable interface for live hosting.
+1. Copy `.env.example` to `.env` and fill in real values (see below for where to get them).
+2. Install dependencies: `npm install`
+3. Generate the Prisma client: `npm run db:generate`
+4. Apply migrations: `npm run db:migrate`
+5. Seed the event, teams-less start state, and the question bank:
+   `npm run db:seed`
+6. Run the dev server: `npm run dev`
 
----
+### Getting Supabase credentials
 
-## 🖥️ Screens & Architecture Overview
+This project uses Supabase purely as (a) a hosted Postgres database via Prisma, and
+(b) a Realtime broadcast relay — it does **not** use Supabase Auth, Storage, or direct
+table access from the browser.
 
-### **1. Landing Page**
+1. Create a project at supabase.com.
+2. `DATABASE_URL` / `DIRECT_URL`: from Project Settings → Database → Connection string
+   (pooled for `DATABASE_URL`, direct for `DIRECT_URL`, used by migrations).
+3. `NEXT_PUBLIC_SUPABASE_URL` / `NEXT_PUBLIC_SUPABASE_ANON_KEY`: Project Settings → API.
+   The anon key is safe to expose — it's only ever used client-side to subscribe to a
+   broadcast channel, never to query tables.
+4. `SUPABASE_SERVICE_ROLE_KEY`: Project Settings → API. **Server-only, never expose to
+   the client.** Used exclusively to publish sanitized game events (see
+   `lib/realtime/broadcast.ts`).
 
-A polished greeting screen with a CTA to begin the quiz. Perfect for stage introductions.
+Row Level Security is **enabled with zero policies** on all six tables (already applied
+to the live project via a migration). This isn't for row-level access control — the app
+never queries tables through Supabase's client library at all, so no policies are
+needed — it's to deny Supabase's auto-generated REST/GraphQL API entirely. Without RLS,
+anyone holding the anon key (which is intentionally public, since it's shipped to every
+browser for Realtime) could hit `https://<project>.supabase.co/rest/v1/Question`
+directly and read `correctOption`, or read team PINs from `Team`, bypassing the app
+entirely. Enabling RLS with no policies makes PostgREST/GraphQL return zero rows to
+`anon`/`authenticated` by default. Prisma is unaffected — it connects directly via
+`DATABASE_URL` as the Postgres owner role, not through PostgREST, so RLS doesn't apply
+to it.
 
-### **2. Quiz Screen**
+### Local Postgres instead of Supabase (dev only)
 
-The central hub containing:
-
-* Large question card
-* MCQ option layout
-* Reveal Answer control
-* Left-side participant scoring controls
-* Right-side animated leaderboard
-
-### **3. Finale Screen**
-
-Celebrates the top 3 participants with:
-
-* Gold aurora animations
-* Spotlight effects
-* Clean ranking layout
-
----
-
-## 🎨 Design Philosophy
-
-IgniteQuest has a bold and royal theme:
-
-* **Primary Colors:** Royal Black `#0A0A0A`, Prestige Gold `#F5C542`
-* **Fonts:** Playfair Display, Montserrat, Source Sans Pro
-* **Animations:** Cinematic, smooth, gold-accented motions
-* **UI Personality:** Futuristic, royal, premium
-
-The visuals are crafted to impress teenage audiences and elevate the event's energy.
-
----
-
-## 🛠️ Tech Stack
-
-* **Framework:** Next.js (App Router)
-* **Database:** PostgreSQL (Dockerised for local use)
-* **ORM / Querying:** Prisma (recommended)
-* **Frontend Styling:** Tailwind CSS / Framer Motion (for animations)
-* **Runtime:** Localhost only
-
----
-
-## 🧱 Folder Structure (Recommended)
-
-```
-/ignitequest
-├── app
-│   ├── page.tsx                 # Landing screen
-│   ├── quiz
-│   │   ├── page.tsx             # Main quiz screen
-│   └── finale
-│       ├── page.tsx             # Winners screen
-│
-├── components
-│   ├── QuizCard.tsx
-│   ├── Leaderboard.tsx
-│   ├── ScoreManager.tsx
-│   ├── Layouts
-│   └── Animations
-│
-├── lib
-│   ├── db.ts                    # DB connection
-│   └── utils.ts
-│
-├── prisma
-│   └── schema.prisma            # Participant + Scores
-│
-├── public                       # Static assets, logos, textures
-│
-└── docker
-    └── docker-compose.yml       # Postgres container
-```
-
----
-
-## 🗄️ Database Schema (Conceptual)
-
-```
-Participant {
-  id            Int      @id @default(autoincrement())
-  name          String
-  score         Int      @default(0)
-  createdAt     DateTime @default(now())
-}
-```
-
-Future extensions may include:
-
-* Team mode
-* Rounds
-* Question banks
-
----
-
-## ⚙️ Running Locally
-
-### **1. Start Postgres via Docker**
+`docker-compose.yml` spins up a local Postgres for development. You'll still need a
+real Supabase project for Realtime broadcast, since that's a hosted service.
 
 ```sh
 docker compose up -d
 ```
 
-### **2. Apply Prisma Migrations**
+## Running the event
 
-```sh
-npx prisma migrate dev
-```
+1. Host opens `/host/login`, enters `HOST_PASSWORD`.
+2. Teams register at `/register` on the shared WiFi (Vercel deployment reachable from
+   phones). Each team gets a 6-character PIN — the leader keeps it for Phase 2.
+3. Phones go away. Projector goes up on `/projector`.
+4. Host clicks **Start Phase 1** and runs the round-robin arena from `/host`.
+5. Host clicks **End Phase 1 → Select Finalists** once scoring is done — this locks
+   scores and marks non-finalist teams eliminated.
+6. Finalists' phones come back out; leaders log in at `/play` with their PIN.
+7. Host starts each Phase 2 question from `/host` — all finalists answer
+   simultaneously, no leaderboard shown anywhere.
+8. Host clicks **Reveal Finale** — `/projector` and `/finale` show the champions.
 
-### **3. Run Next.js Dev Server**
+## Config
 
-```sh
-npm run dev
-```
+All game tuning is env-based (see `.env.example`): finalist count, per-phase time
+limits, and point values. This is a deliberate scope decision — see
+`gpt-chat-reference.md` and `CLAUDE.md` — not an oversight; there is no settings UI.
 
-### **4. Visit IgniteQuest**
+## Question bank
 
-* Landing Page → `http://localhost:3000`
-* Quiz Screen → `/quiz`
-* Finale Screen → `/finale`
+`data/questions/phase1.json` and `data/questions/phase2.json` are the source of truth,
+loaded by `prisma/seed.ts`. Edit these files and re-run `npm run db:seed` to change
+questions — no code changes needed. Each question needs `order` (unique within its
+phase), `type`, `text`, optional `codeSnippet`, four `options`, `correctOption` index,
+and `points`.
 
-Everything runs locally—no internet required.
+## Project status
 
----
-
-## 🧪 Why This Platform Stands Out
-
-* Created specifically for **live, offline, school-friendly quizzes**.
-* Designed with **visual prestige** and **event energy** in mind.
-* Incredibly smooth to operate while speaking on stage.
-* Perfect blend of aesthetics + functionality.
-* Has the cinematic punch teenagers love.
-
----
-
-## 🏁 Project Status & Future Ideas
-
-IgniteQuest is actively evolving. Planned enhancements:
-
-* Multi-round quizzes
-* Sound effects for reveals and leaderboard jumps
-* Animated transitions between questions
-* Team mode support
-* Host-side mobile remote (future possibility)
-
----
-
-## 🤝 Contributions
-
-This project is designed to be extendable. PRs, suggestions, and improvements are welcome.
-
----
-
-## 📜 License
-
-MIT License.
-
----
-
-## ⭐ Final Note
-
-IgniteQuest is more than a quiz tool—it’s a **show**. A crafted experience. A premium highlight of any coding club outreach event.
-
-If you’re using this for an offline quiz in a school or college, prepare for impressed students, teachers, and a very smooth hosting experience.
+Functionality-first build. UI is intentionally plain right now — the KBC/Family Feud
+visual treatment (the black/gold/cinematic direction already partially present in
+`app/globals.css`) is a deliberately separate follow-up pass once the game logic is
+verified end-to-end live.
