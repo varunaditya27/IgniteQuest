@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { env } from "@/lib/env";
+import { gameConfig } from "@/lib/config";
 import { Prisma } from "@prisma/client";
 import { requireTeam } from "@/lib/actions/guard";
 
@@ -39,6 +40,15 @@ export async function submitPhase2Answer(selectedOption: number): Promise<Submit
 
             const startedAt = state.questionStartedAt?.getTime() ?? receivedAt;
             const responseTimeMs = Math.max(0, receivedAt - startedAt);
+
+            // The on-screen timer must actually mean something: the host's "Lock
+            // Answers" click is a manual early-cutoff, but a forgotten click must not
+            // leave the deadline purely decorative. Reject anything past the limit
+            // regardless of whether the host has locked yet.
+            const limitMs = (state.currentQuestion.timeLimitSeconds ?? gameConfig.phase2TimeLimitSeconds) * 1000;
+            if (responseTimeMs > limitMs) {
+                return { success: false, error: "Time's up for this question." };
+            }
             const isCorrect = selectedOption === state.currentQuestion.correctOption;
             const pointsAwarded = isCorrect ? state.currentQuestion.points : 0;
 

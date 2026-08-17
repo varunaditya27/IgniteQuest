@@ -16,12 +16,13 @@ export function Timer({ startedAt, limitSeconds }: { startedAt: string; limitSec
         return () => clearInterval(interval);
     }, [startedAt, limitSeconds]);
 
-    const seconds = String(remaining % 60).padStart(2, "0");
+    const minutes = Math.floor(remaining / 60);
+    const seconds = remaining % 60;
     const isLow = remaining <= 5;
 
     return (
         <div className={`text-6xl font-bebas text-center ${isLow ? "text-carmine-red animate-pulse" : "text-prestige-gold"}`}>
-            00:{seconds}
+            {String(minutes).padStart(2, "0")}:{String(seconds).padStart(2, "0")}
         </div>
     );
 }
