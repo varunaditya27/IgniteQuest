@@ -43,11 +43,21 @@ export type LifelineUsedEvent = {
     payload: { teamId: string; lifeline: LifelineType };
 };
 
+// Fired on every successful registration so the host console's team list/count stays
+// live without a manual reload — the one moment in the event where the host most
+// needs to watch things fill up in real time. No payload: HostConsole refreshes on
+// any broadcast regardless of type, and no other screen needs to react to this at all.
+export type TeamRegisteredEvent = {
+    type: "TEAM_REGISTERED";
+    payload: Record<string, never>;
+};
+
 export type GameEvent =
     | GameStateEvent
     | ScoreUpdatedEvent
     | AnswerRevealedEvent
-    | LifelineUsedEvent;
+    | LifelineUsedEvent
+    | TeamRegisteredEvent;
 
 export const GAME_CHANNEL_EVENT = "game_event";
 

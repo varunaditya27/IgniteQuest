@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { env } from "@/lib/env";
 import { Prisma } from "@prisma/client";
+import { broadcast } from "@/lib/realtime/broadcast";
 
 const PIN_CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // no 0/O/1/I to avoid confusion
 
@@ -42,6 +43,7 @@ export async function registerTeam(teamName: string, leaderName: string): Promis
             const team = await prisma.team.create({
                 data: { eventId, name, leaderName: leader, pin },
             });
+            await broadcast(eventId, { type: "TEAM_REGISTERED", payload: {} });
             return { success: true, teamId: team.id, pin };
         } catch (e) {
             if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2002") {
