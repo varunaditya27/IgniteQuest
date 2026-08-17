@@ -20,42 +20,48 @@ export function QuestionDisplay({ question, hiddenOptions, revealed, revealedCor
                     {activeTeamName}&apos;s turn
                 </p>
             )}
-            <div className="bg-carbon-gray/90 border border-prestige-gold/30 rounded-2xl p-8 shadow-[0_0_30px_rgba(245,197,66,0.1)]">
-                {question.codeSnippet && (
-                    <pre className="bg-black/60 p-4 rounded-lg mb-6 text-lg overflow-x-auto font-mono text-ivory-white/90">
-                        {question.codeSnippet}
-                    </pre>
-                )}
-                <h2 className="text-3xl md:text-4xl text-center mb-8">{question.text}</h2>
+            <div className="bg-carbon-gray/90 border border-prestige-gold/30 rounded-2xl p-8 shadow-[0_0_30px_rgba(245,197,66,0.1)] min-h-[200px] flex flex-col justify-center">
+                {!revealed ? (
+                    <p className="text-center text-2xl text-ivory-white/40 font-playfair tracking-wide animate-pulse">
+                        Get ready…
+                    </p>
+                ) : (
+                    <>
+                        {question.codeSnippet && (
+                            <pre className="bg-black/60 p-4 rounded-lg mb-6 text-lg overflow-x-auto font-mono text-ivory-white/90">
+                                {question.codeSnippet}
+                            </pre>
+                        )}
+                        <h2 className="text-3xl md:text-4xl text-center mb-8">{question.text}</h2>
 
-                {revealed && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {question.options.map((opt, i) => {
-                            if (hiddenOptions.includes(i)) {
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {question.options.map((opt, i) => {
+                                if (hiddenOptions.includes(i)) {
+                                    return (
+                                        <div key={i} className="p-4 rounded-xl border-2 border-white/5 opacity-20">
+                                            {String.fromCharCode(65 + i)}. —
+                                        </div>
+                                    );
+                                }
+                                const isCorrect = revealedCorrectOption === i;
                                 return (
-                                    <div key={i} className="p-4 rounded-xl border-2 border-white/5 opacity-20">
-                                        {String.fromCharCode(65 + i)}. —
-                                    </div>
+                                    <motion.div
+                                        key={i}
+                                        initial={{ opacity: 0, y: 10 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        className={cn(
+                                            "p-4 rounded-xl border-2 text-xl transition-colors",
+                                            isCorrect
+                                                ? "border-emerald-signal bg-emerald-900/30 text-emerald-signal font-bold"
+                                                : "border-white/10 text-ivory-white"
+                                        )}
+                                    >
+                                        {String.fromCharCode(65 + i)}. {opt}
+                                    </motion.div>
                                 );
-                            }
-                            const isCorrect = revealedCorrectOption === i;
-                            return (
-                                <motion.div
-                                    key={i}
-                                    initial={{ opacity: 0, y: 10 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    className={cn(
-                                        "p-4 rounded-xl border-2 text-xl transition-colors",
-                                        isCorrect
-                                            ? "border-emerald-signal bg-emerald-900/30 text-emerald-signal font-bold"
-                                            : "border-white/10 text-ivory-white"
-                                    )}
-                                >
-                                    {String.fromCharCode(65 + i)}. {opt}
-                                </motion.div>
-                            );
-                        })}
-                    </div>
+                            })}
+                        </div>
+                    </>
                 )}
             </div>
         </div>
