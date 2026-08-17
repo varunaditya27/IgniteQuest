@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useGameChannel } from "@/hooks/useGameChannel";
+import { getPublicSnapshot } from "@/lib/actions/queries";
 import { submitPhase2Answer } from "@/lib/actions/gameplay";
 import { teamLogout } from "@/lib/actions/auth";
 import { Button } from "@/components/ui/Button";
@@ -23,17 +24,32 @@ type Props = LiveState & { eventId: string; teamName: string };
 export function Phase2AnswerScreen({ eventId, teamName, ...initial }: Props) {
     const [state, setState] = useState<LiveState>(initial);
 
-    useGameChannel(eventId, (event) => {
-        if (event.type === "GAME_STATE_CHANGED") {
+    useGameChannel(
+        eventId,
+        (event) => {
+            if (event.type === "GAME_STATE_CHANGED") {
+                setState({
+                    phase: event.payload.phase,
+                    question: event.payload.currentQuestion,
+                    revealed: event.payload.questionRevealed,
+                    locked: event.payload.answerLocked,
+                    startedAt: event.payload.questionStartedAt,
+                });
+            }
+        },
+        async () => {
+            // Resync on connect/reconnect — a team's phone losing signal for even a
+            // moment must never leave it stuck showing a stale/finished question.
+            const snapshot = await getPublicSnapshot();
             setState({
-                phase: event.payload.phase,
-                question: event.payload.currentQuestion,
-                revealed: event.payload.questionRevealed,
-                locked: event.payload.answerLocked,
-                startedAt: event.payload.questionStartedAt,
+                phase: snapshot.phase,
+                question: snapshot.currentQuestion,
+                revealed: snapshot.questionRevealed,
+                locked: snapshot.answerLocked,
+                startedAt: snapshot.questionStartedAt,
             });
         }
-    });
+    );
 
     if (state.phase === "FINALE") {
         return <StatusScreen teamName={teamName} message="The Final Sprint is complete. Watch the projector!" />;
@@ -67,17 +83,26 @@ function QuestionAnswerForm({
 }) {
     const [selected, setSelected] = useState<number | null>(null);
     const [submitted, setSubmitted] = useState(false);
+    const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const locked = lockedFromHost || submitted;
+    const locked = lockedFromHost || submitted || submitting;
 
     async function handleSubmit(optionIndex: number) {
         setSelected(optionIndex);
-        const res = await submitPhase2Answer(optionIndex);
-        if (!res.success) {
-            setError(res.error);
-            return;
+        setSubmitting(true);
+        setError(null);
+        try {
+            const res = await submitPhase2Answer(optionIndex);
+            if (!res.success) {
+                setError(res.error);
+                return;
+            }
+            setSubmitted(true);
+        } catch {
+            setError("Couldn't submit — check your connection and try again.");
+        } finally {
+            setSubmitting(false);
         }
-        setSubmitted(true);
     }
 
     return (
