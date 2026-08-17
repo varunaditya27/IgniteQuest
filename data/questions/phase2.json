@@ -1,0 +1,112 @@
+[
+  {
+    "order": 1,
+    "topic": "output",
+    "text": "What is printed?",
+    "codeSnippet": "x = 3\nfor i in range(4):\n    x += i\nprint(x)",
+    "options": ["6", "9", "10", "12"],
+    "correctOption": 1,
+    "points": 100
+  },
+  {
+    "order": 2,
+    "topic": "debugging",
+    "text": "Which fix makes this valid Python?",
+    "codeSnippet": "numbers = [1, 2, 3]\nfor n in numbers\n    print(n)",
+    "options": [
+      "Add a colon after `numbers`",
+      "Replace `for` with `while`",
+      "Remove `print(n)`",
+      "Add parentheses around `numbers`"
+    ],
+    "correctOption": 0,
+    "points": 100
+  },
+  {
+    "order": 3,
+    "topic": "logic",
+    "text": "Which code correctly counts even numbers in a list called `nums`?",
+    "codeSnippet": null,
+    "options": [
+      "count = 0\nfor n in nums:\n    if n % 2 == 1:\n        count += 1",
+      "count = 0\nfor n in nums:\n    if n % 2 == 0:\n        count += 1",
+      "count = len(nums) % 2",
+      "count = sum(nums) // 2"
+    ],
+    "correctOption": 1,
+    "points": 100
+  },
+  {
+    "order": 4,
+    "topic": "dictionaries",
+    "text": "What is printed?",
+    "codeSnippet": "d = {\"x\": 1, \"y\": 2}\nd[\"z\"] = d[\"x\"] + d[\"y\"]\nprint(list(d.keys()))",
+    "options": ["['x', 'y']", "['x', 'y', 'z']", "['z', 'x', 'y']", "Error"],
+    "correctOption": 1,
+    "points": 100
+  },
+  {
+    "order": 5,
+    "topic": "functions",
+    "text": "What is printed?",
+    "codeSnippet": "def mystery(n):\n    if n <= 1:\n        return 1\n    return n * mystery(n - 1)\n\nprint(mystery(4))",
+    "options": ["10", "16", "24", "4"],
+    "correctOption": 2,
+    "points": 100
+  },
+  {
+    "order": 6,
+    "topic": "file_handling",
+    "text": "Which snippet correctly reads a file line by line without leaving it open?",
+    "codeSnippet": null,
+    "options": [
+      "f = open(\"data.txt\")\nlines = f.readlines()",
+      "with open(\"data.txt\") as f:\n    for line in f:\n        print(line)",
+      "open(\"data.txt\").read().close()",
+      "file.read(\"data.txt\")"
+    ],
+    "correctOption": 1,
+    "points": 100
+  },
+  {
+    "order": 7,
+    "topic": "lists",
+    "text": "What is printed?",
+    "codeSnippet": "nums = [1, 2, 3, 4, 5]\nsquares = [n * n for n in nums if n % 2 == 0]\nprint(squares)",
+    "options": ["[1, 4, 9, 16, 25]", "[4, 16]", "[2, 4]", "[1, 9, 25]"],
+    "correctOption": 1,
+    "points": 100
+  },
+  {
+    "order": 8,
+    "topic": "debugging",
+    "text": "What happens when this code runs?",
+    "codeSnippet": "inventory = {\"apples\": 5, \"bananas\": 3}\nprint(inventory[\"cherries\"])",
+    "options": ["Prints 0", "Prints None", "Raises KeyError", "Prints an empty string"],
+    "correctOption": 2,
+    "points": 100
+  },
+  {
+    "order": 9,
+    "topic": "boss",
+    "text": "What is printed?",
+    "codeSnippet": "def total_price(cart):\n    return sum(item[\"price\"] * item[\"qty\"] for item in cart)\n\ncart = [{\"price\": 10, \"qty\": 2}, {\"price\": 5, \"qty\": 3}]\nprint(total_price(cart))",
+    "options": ["15", "20", "35", "50"],
+    "correctOption": 2,
+    "points": 100
+  },
+  {
+    "order": 10,
+    "topic": "scenario",
+    "text": "You need to process a large file line-by-line without loading it fully into memory. Which construct should you use?",
+    "codeSnippet": null,
+    "options": [
+      "file.read() then split by newline",
+      "for line in open(filename):",
+      "file.readlines() then loop with index",
+      "list(file) then reverse()"
+    ],
+    "correctOption": 1,
+    "points": 100
+  }
+]

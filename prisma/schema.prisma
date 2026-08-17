@@ -1,0 +1,165 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// Single-event deployment: exactly one Event row, pinned by EVENT_ID env var.
+model Event {
+  id        String   @id @default(cuid())
+  name      String
+  createdAt DateTime @default(now())
+
+  teams     Team[]
+  questions Question[]
+  gameState GameState?
+}
+
+model Team {
+  id      String @id @default(cuid())
+  eventId String
+  event   Event  @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  name       String
+  leaderName String
+  pin        String
+
+  score     Int     @default(0)
+  qualified Boolean @default(false)
+
+  // Last-resort deterministic tiebreak key. Null until a host resolves a tie;
+  // once set, lower value ranks higher within the tied group only.
+  manualRank Int?
+
+  createdAt DateTime @default(now())
+
+  teamAnswers     TeamAnswer[]
+  lifelineUsages  LifelineUsage[]
+  activeInGame    GameState[]     @relation("ActiveTeam")
+
+  @@unique([eventId, name])
+}
+
+enum QuestionPhase {
+  PHASE_1
+  PHASE_2
+}
+
+model Question {
+  id      String @id @default(cuid())
+  eventId String
+  event   Event  @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  phase QuestionPhase
+  order Int
+
+  text         String
+  codeSnippet  String?
+  topic        String
+  options      Json
+  correctOption Int
+  points       Int
+
+  // Set the instant this question becomes GameState.currentQuestionId, in
+  // either phase. A question is "used up" by being shown, not by being
+  // scored — this is what keeps an unanswered/skipped question from
+  // resurfacing later in the round-robin or in Phase 2.
+  presentedAt DateTime?
+
+  createdAt DateTime @default(now())
+
+  teamAnswers    TeamAnswer[]
+  lifelineUsages LifelineUsage[]
+  currentInGame  GameState[]     @relation("CurrentQuestion")
+
+  @@unique([eventId, phase, order])
+}
+
+enum Stage {
+  LOBBY
+  PHASE1_INTERSTITIAL
+  PHASE1_QUESTION
+  PHASE1_TIEBREAK
+  PHASE1_QUALIFIERS_REVEAL
+  PHASE2_LOBBY
+  PHASE2_QUESTION
+  PHASE2_TIEBREAK
+  FINALE
+}
+
+// Singleton per Event: "what is happening right now." Drives the single
+// cinematic host/stage screen as one state machine.
+model GameState {
+  id      String @id @default(cuid())
+  eventId String @unique
+  event   Event  @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  stage Stage @default(LOBBY)
+
+  currentQuestionId String?
+  currentQuestion   Question? @relation("CurrentQuestion", fields: [currentQuestionId], references: [id])
+
+  // Phase 1 only — the team whose turn it is in the round-robin.
+  activeTeamId String?
+  activeTeam   Team?   @relation("ActiveTeam", fields: [activeTeamId], references: [id])
+
+  // Timing for the current question, shared by both phases.
+  questionStartedAt DateTime?
+
+  // Phase 1: the option the host clicked to lock the team's verbal answer,
+  // before Reveal turns it green/red. Null once the question advances.
+  lockedOptionIndex Int?
+  answerRevealedAt  DateTime?
+
+  // Which two option indices 50:50 hid for the current question. Reset
+  // whenever currentQuestionId changes.
+  hiddenOptions Int[] @default([])
+
+  // Team ids awaiting a manual host tiebreak decision. Populated when
+  // Stage is PHASE1_TIEBREAK or PHASE2_TIEBREAK, empty otherwise.
+  tiebreakTeamIds String[] @default([])
+
+  updatedAt DateTime @updatedAt
+
+  @@map("game_state")
+}
+
+model TeamAnswer {
+  id       String @id @default(cuid())
+  teamId   String
+  team     Team   @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  questionId String
+  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  selectedOption Int
+  isCorrect      Boolean
+  pointsAwarded  Int
+
+  submittedAt    DateTime
+  responseTimeMs Int?
+
+  @@unique([teamId, questionId])
+}
+
+enum LifelineType {
+  FIFTY_FIFTY
+  ASK_AUDIENCE
+  ASK_EXPERT
+}
+
+model LifelineUsage {
+  id     String @id @default(cuid())
+  teamId String
+  team   Team   @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  questionId String
+  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  type   LifelineType
+  usedAt DateTime @default(now())
+
+  @@unique([teamId, type])
+}

@@ -1,0 +1,169 @@
+[
+  {
+    "order": 1,
+    "topic": "basics",
+    "text": "Which of the following is used to write a comment in Python?",
+    "codeSnippet": null,
+    "options": ["// comment", "# comment", "/* comment */", "<!-- comment -->"],
+    "correctOption": 1,
+    "points": 1000
+  },
+  {
+    "order": 2,
+    "topic": "basics",
+    "text": "What is the correct file extension for Python source files?",
+    "codeSnippet": null,
+    "options": [".pt", ".py", ".pyt", ".python"],
+    "correctOption": 1,
+    "points": 2000
+  },
+  {
+    "order": 3,
+    "topic": "syntax",
+    "text": "Which of these is a valid Python variable name?",
+    "codeSnippet": null,
+    "options": ["2var", "var_2", "var-2", "var 2"],
+    "correctOption": 1,
+    "points": 3000
+  },
+  {
+    "order": 4,
+    "topic": "syntax",
+    "text": "What does this print?",
+    "codeSnippet": "x = 5\ny = \"5\"\nprint(type(x) == type(y))",
+    "options": ["True", "False", "Error", "None"],
+    "correctOption": 1,
+    "points": 5000
+  },
+  {
+    "order": 5,
+    "topic": "operators",
+    "text": "What is the result of 7 // 2 in Python?",
+    "codeSnippet": null,
+    "options": ["3.5", "3", "4", "2"],
+    "correctOption": 1,
+    "points": 7000
+  },
+  {
+    "order": 6,
+    "topic": "operators",
+    "text": "What does the % operator return?",
+    "codeSnippet": null,
+    "options": ["Quotient", "Remainder", "Power", "Floor division"],
+    "correctOption": 1,
+    "points": 10000
+  },
+  {
+    "order": 7,
+    "topic": "conditions",
+    "text": "What is printed?",
+    "codeSnippet": "x = 10\nif x > 5 and x < 20:\n    print(\"A\")\nelif x > 20:\n    print(\"B\")\nelse:\n    print(\"C\")",
+    "options": ["A", "B", "C", "No output"],
+    "correctOption": 0,
+    "points": 13000
+  },
+  {
+    "order": 8,
+    "topic": "conditions",
+    "text": "What does the `is` operator compare in Python?",
+    "codeSnippet": null,
+    "options": ["Value only", "Type only", "Object identity", "String length"],
+    "correctOption": 2,
+    "points": 16000
+  },
+  {
+    "order": 9,
+    "topic": "loops",
+    "text": "What is printed?",
+    "codeSnippet": "total = 0\nfor i in range(1, 5):\n    total += i\nprint(total)",
+    "options": ["6", "10", "15", "4"],
+    "correctOption": 1,
+    "points": 20000
+  },
+  {
+    "order": 10,
+    "topic": "loops",
+    "text": "What is printed?",
+    "codeSnippet": "i = 0\nwhile i < 3:\n    print(i, end=\" \")\n    i += 1",
+    "options": ["0 1 2 ", "1 2 3 ", "0 1 2 3 ", "Infinite loop"],
+    "correctOption": 0,
+    "points": 25000
+  },
+  {
+    "order": 11,
+    "topic": "functions",
+    "text": "What is printed?",
+    "codeSnippet": "def square(n):\n    return n * n\n\nprint(square(4) + square(2))",
+    "options": ["16", "20", "24", "36"],
+    "correctOption": 1,
+    "points": 30000
+  },
+  {
+    "order": 12,
+    "topic": "output",
+    "text": "What is printed?",
+    "codeSnippet": "def greet(name=\"World\"):\n    return f\"Hello, {name}!\"\n\nprint(greet())",
+    "options": ["Hello, !", "Hello, World!", "Hello, name!", "Error"],
+    "correctOption": 1,
+    "points": 35000
+  },
+  {
+    "order": 13,
+    "topic": "debugging",
+    "text": "What is wrong with this code?",
+    "codeSnippet": "numbers = [1, 2, 3]\n\nfor n in numbers\n    print(n)",
+    "options": [
+      "Missing colon after `numbers`",
+      "`numbers` should be a dictionary",
+      "`print` is misspelled",
+      "Nothing is wrong"
+    ],
+    "correctOption": 0,
+    "points": 40000
+  },
+  {
+    "order": 14,
+    "topic": "lists",
+    "text": "What is printed?",
+    "codeSnippet": "fruits = [\"apple\", \"banana\", \"cherry\"]\nfruits.append(\"date\")\nprint(fruits[-1])",
+    "options": ["cherry", "date", "apple", "Error"],
+    "correctOption": 1,
+    "points": 50000
+  },
+  {
+    "order": 15,
+    "topic": "lists",
+    "text": "Which list method removes and returns the last item?",
+    "codeSnippet": null,
+    "options": ["remove()", "pop()", "delete()", "discard()"],
+    "correctOption": 1,
+    "points": 60000
+  },
+  {
+    "order": 16,
+    "topic": "dictionaries",
+    "text": "What is printed?",
+    "codeSnippet": "scores = {\"a\": 10, \"b\": 20}\nscores[\"c\"] = 30\nprint(sum(scores.values()))",
+    "options": ["30", "50", "60", "Error"],
+    "correctOption": 2,
+    "points": 70000
+  },
+  {
+    "order": 17,
+    "topic": "file_handling",
+    "text": "Which mode opens a file for appending text without erasing existing content?",
+    "codeSnippet": null,
+    "options": ["'r'", "'w'", "'a'", "'x'"],
+    "correctOption": 2,
+    "points": 85000
+  },
+  {
+    "order": 18,
+    "topic": "boss",
+    "text": "What is printed?",
+    "codeSnippet": "def count_even(nums):\n    count = 0\n    for n in nums:\n        if n % 2 == 0:\n            count += 1\n    return count\n\ndata = {\"nums\": [1, 2, 3, 4, 5, 6]}\nprint(count_even(data[\"nums\"]))",
+    "options": ["2", "3", "4", "6"],
+    "correctOption": 1,
+    "points": 100000
+  }
+]
