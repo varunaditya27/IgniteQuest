@@ -98,10 +98,10 @@ export function Phase1Panel({ gameState, teams, totalQuestions }: Props) {
                         <Button onClick={() => run(revealCurrentQuestion)} disabled={pending || gameState.questionRevealed} className="bg-prestige-gold text-royal-black disabled:opacity-40">
                             Reveal
                         </Button>
-                        <Button onClick={() => run(() => recordPhase1Answer(true))} disabled={pending} className="bg-emerald-signal text-royal-black font-bold disabled:opacity-40">
+                        <Button onClick={() => run(() => recordPhase1Answer(true))} disabled={pending || !gameState.questionRevealed} className="bg-emerald-signal text-royal-black font-bold disabled:opacity-40">
                             Correct
                         </Button>
-                        <Button onClick={() => run(() => recordPhase1Answer(false))} disabled={pending} variant="destructive" className="font-bold disabled:opacity-40">
+                        <Button onClick={() => run(() => recordPhase1Answer(false))} disabled={pending || !gameState.questionRevealed} variant="destructive" className="font-bold disabled:opacity-40">
                             Wrong
                         </Button>
                         <Button onClick={() => run(advanceToNextPhase1Question)} disabled={pending} className="bg-carbon-gray border border-prestige-gold/40 text-prestige-gold ml-auto disabled:opacity-40">

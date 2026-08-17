@@ -94,6 +94,12 @@ export async function recordPhase1Answer(isCorrect: boolean) {
     if (!state.currentQuestion || !state.activeTeam) {
         throw new Error("No active question/team to record an answer for.");
     }
+    // Scoring before Reveal would leave questionStartedAt unset, making
+    // responseTimeMs null — which the tiebreak treats as 0ms, unfairly making that
+    // team look instantaneous next to every team scored normally.
+    if (!state.questionRevealed || !state.questionStartedAt) {
+        throw new Error("Reveal the question before recording an answer.");
+    }
 
     const teamId = state.activeTeam.id;
     const questionId = state.currentQuestion.id;
@@ -102,7 +108,7 @@ export async function recordPhase1Answer(isCorrect: boolean) {
     // tie-break (see lockPhase1AndSelectFinalists). Only set on the *first* verdict for
     // this question; a later Correct/Wrong correction shouldn't retroactively change
     // how long the team took to answer, just the outcome.
-    const responseTimeMs = state.questionStartedAt ? Date.now() - state.questionStartedAt.getTime() : null;
+    const responseTimeMs = Date.now() - state.questionStartedAt.getTime();
 
     await prisma.$transaction(async (tx) => {
         const existing = await tx.teamAnswer.findUnique({
