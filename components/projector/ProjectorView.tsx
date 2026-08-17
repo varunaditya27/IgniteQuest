@@ -8,6 +8,7 @@ import { QuestionDisplay } from "@/components/projector/QuestionDisplay";
 import { Timer } from "@/components/shared/Timer";
 import { Leaderboard } from "@/components/shared/Leaderboard";
 import { EventBranding } from "@/components/shared/EventBranding";
+import { sfx } from "@/lib/sound/sfx";
 import { gameConfig } from "@/lib/config";
 import type { GamePhase } from "@prisma/client";
 import type { GameStateEvent, PublicQuestion } from "@/lib/realtime/events";
@@ -56,6 +57,7 @@ export function ProjectorView({ eventId, initialLeaderboard, ...initial }: Props
                 setRevealedAnswer(event.payload);
             } else if (event.type === "LIFELINE_USED") {
                 setLifelineNotice(`Lifeline used: ${event.payload.lifeline.replace("_", " ")}`);
+                sfx.lifelineStinger();
                 setTimeout(() => setLifelineNotice(null), 4000);
             }
         },

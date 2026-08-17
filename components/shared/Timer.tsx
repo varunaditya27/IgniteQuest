@@ -1,10 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
+import { sfx } from "@/lib/sound/sfx";
 
 export function Timer({ startedAt, limitSeconds }: { startedAt: string; limitSeconds: number }) {
     const [remaining, setRemaining] = useState(limitSeconds);
+    const prevRemaining = useRef(limitSeconds);
 
     useEffect(() => {
         const start = new Date(startedAt).getTime();
@@ -16,6 +18,14 @@ export function Timer({ startedAt, limitSeconds }: { startedAt: string; limitSec
         const interval = setInterval(tick, 250);
         return () => clearInterval(interval);
     }, [startedAt, limitSeconds]);
+
+    useEffect(() => {
+        if (remaining === prevRemaining.current) return;
+        prevRemaining.current = remaining;
+        if (remaining === 0) sfx.buzzer();
+        else if (remaining <= 5) sfx.tickUrgent();
+        else sfx.tick();
+    }, [remaining]);
 
     const minutes = Math.floor(remaining / 60);
     const seconds = remaining % 60;

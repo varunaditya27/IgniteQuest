@@ -1,9 +1,11 @@
 "use client";
 
+import { useEffect } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/Button";
 import Link from "next/link";
 import { EventBranding } from "@/components/shared/EventBranding";
+import { sfx } from "@/lib/sound/sfx";
 import type { FastestFingersResult } from "@/lib/game/scoring";
 
 type Winner = FastestFingersResult & { name: string };
@@ -14,8 +16,26 @@ const PODIUM = [
     { place: 3, heightClass: "h-32", from: "from-stage-black-raised to-bronze-medal/40", border: "border-bronze-medal" },
 ] as const;
 
+// Mirrors the motion timings below (title at 0.3s, podium blocks at
+// 0.8/1.0/1.2s, branding at 2s) so the audio climax lands with the visuals
+// instead of racing ahead of or trailing them.
+const CUE_SCHEDULE: [() => void, number][] = [
+    [sfx.drumroll, 0],
+    [sfx.suspenseChord, 300],
+    [sfx.podiumThud, 800],
+    [sfx.podiumThud, 1000],
+    [sfx.podiumThud, 1200],
+    [sfx.fanfare, 1800],
+    [sfx.crowdCheer, 2000],
+];
+
 export function FinaleReveal({ winners }: { winners: Winner[] }) {
     const byPlace = (place: number) => winners[place - 1];
+
+    useEffect(() => {
+        const timers = CUE_SCHEDULE.map(([cue, delay]) => setTimeout(cue, delay));
+        return () => timers.forEach(clearTimeout);
+    }, []);
 
     return (
         <main className="stage-spotlight curtain-edges flex min-h-screen flex-col items-center justify-center overflow-hidden relative">

@@ -5,6 +5,7 @@ import { registerTeam } from "@/lib/actions/registration";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
+import { sfx } from "@/lib/sound/sfx";
 
 export function RegisterForm() {
     const [teamName, setTeamName] = useState("");
@@ -22,11 +23,14 @@ export function RegisterForm() {
             const res = await registerTeam(teamName, leaderName);
             if (!res.success) {
                 setError(res.error);
+                sfx.error();
                 return;
             }
+            sfx.pinSuccess();
             setResult({ pin: res.pin, teamName });
         } catch {
             setError("Something went wrong — check your connection and try again.");
+            sfx.error();
         } finally {
             setPending(false);
         }

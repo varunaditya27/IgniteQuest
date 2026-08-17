@@ -7,6 +7,7 @@ import { RegistrationPanel } from "@/components/host/RegistrationPanel";
 import { Phase1Panel } from "@/components/host/Phase1Panel";
 import { Phase2Panel } from "@/components/host/Phase2Panel";
 import { hostLogout } from "@/lib/actions/auth";
+import { sfx } from "@/lib/sound/sfx";
 
 export type GameStateWithRelations = Awaited<ReturnType<typeof getGameStateWithRelations>>;
 export type TeamForHost = Awaited<ReturnType<typeof getTeamsForHost>>[number];
@@ -30,7 +31,10 @@ export function HostConsole({ eventId, initialGameState, initialTeams, phase1Que
     // that drops WiFi for a moment must still end up consistent, not stuck stale.
     useGameChannel(
         eventId,
-        () => router.refresh(),
+        (event) => {
+            if (event.type === "TEAM_REGISTERED") sfx.pinSuccess();
+            router.refresh();
+        },
         () => router.refresh()
     );
 

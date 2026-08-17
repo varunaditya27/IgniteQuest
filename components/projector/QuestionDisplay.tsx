@@ -1,7 +1,9 @@
 "use client";
 
+import { useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { sfx } from "@/lib/sound/sfx";
 import type { PublicQuestion } from "@/lib/realtime/events";
 
 type Props = {
@@ -13,6 +15,20 @@ type Props = {
 };
 
 export function QuestionDisplay({ question, hiddenOptions, revealed, revealedCorrectOption, activeTeamName }: Props) {
+    const prev = useRef({ revealed, hiddenOptionsCount: hiddenOptions.length, correctOption: revealedCorrectOption, questionId: question.id });
+
+    useEffect(() => {
+        const p = prev.current;
+        if (question.id !== p.questionId) {
+            sfx.cardChange();
+        } else {
+            if (revealed && !p.revealed) sfx.reveal();
+            if (hiddenOptions.length > p.hiddenOptionsCount) sfx.fiftyFifty();
+            if (revealedCorrectOption !== null && p.correctOption === null) sfx.correctDing();
+        }
+        prev.current = { revealed, hiddenOptionsCount: hiddenOptions.length, correctOption: revealedCorrectOption, questionId: question.id };
+    }, [question.id, revealed, hiddenOptions.length, revealedCorrectOption]);
+
     return (
         <div className="w-full max-w-4xl mx-auto">
             {activeTeamName && (

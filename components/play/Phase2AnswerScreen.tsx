@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/Button";
 import { Timer } from "@/components/shared/Timer";
 import { gameConfig } from "@/lib/config";
 import { cn } from "@/lib/utils";
+import { sfx } from "@/lib/sound/sfx";
 import type { PublicQuestion } from "@/lib/realtime/events";
 import type { GamePhase } from "@prisma/client";
 
@@ -90,17 +91,21 @@ function QuestionAnswerForm({
 
     async function handleSubmit(optionIndex: number) {
         setSelected(optionIndex);
+        sfx.tap();
         setSubmitting(true);
         setError(null);
         try {
             const res = await submitPhase2Answer(optionIndex);
             if (!res.success) {
                 setError(res.error);
+                sfx.error();
                 return;
             }
+            sfx.lockIn();
             setSubmitted(true);
         } catch {
             setError("Couldn't submit — check your connection and try again.");
+            sfx.error();
         } finally {
             setSubmitting(false);
         }

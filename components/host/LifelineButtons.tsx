@@ -3,13 +3,14 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { useFiftyFifty, useAskAudience, useAskExpert, useSwitchQuestion } from "@/lib/actions/host-lifelines";
+import { sfx } from "@/lib/sound/sfx";
 import type { LifelineType } from "@prisma/client";
 
-const LIFELINES: { type: LifelineType; label: string; action: () => Promise<{ success: boolean; error?: string }> }[] = [
-    { type: "FIFTY_FIFTY", label: "50:50", action: useFiftyFifty },
-    { type: "ASK_AUDIENCE", label: "Ask Audience", action: useAskAudience },
-    { type: "ASK_EXPERT", label: "Ask Expert", action: useAskExpert },
-    { type: "SWITCH_QUESTION", label: "Switch Question", action: useSwitchQuestion },
+const LIFELINES: { type: LifelineType; label: string; action: () => Promise<{ success: boolean; error?: string }>; sound: () => void }[] = [
+    { type: "FIFTY_FIFTY", label: "50:50", action: useFiftyFifty, sound: sfx.fiftyFifty },
+    { type: "ASK_AUDIENCE", label: "Ask Audience", action: useAskAudience, sound: sfx.lifelineStinger },
+    { type: "ASK_EXPERT", label: "Ask Expert", action: useAskExpert, sound: sfx.lifelineStinger },
+    { type: "SWITCH_QUESTION", label: "Switch Question", action: useSwitchQuestion, sound: sfx.cardChange },
 ];
 
 export function LifelineButtons({ usedTypes, disabled }: { usedTypes: LifelineType[]; disabled: boolean }) {
@@ -31,9 +32,15 @@ export function LifelineButtons({ usedTypes, disabled }: { usedTypes: LifelineTy
                                 setError(null);
                                 try {
                                     const res = await l.action();
-                                    if (!res.success) setError(res.error ?? "Failed.");
+                                    if (!res.success) {
+                                        setError(res.error ?? "Failed.");
+                                        sfx.error();
+                                    } else {
+                                        l.sound();
+                                    }
                                 } catch {
                                     setError("Something went wrong — check your connection and try again.");
+                                    sfx.error();
                                 } finally {
                                     setPending(null);
                                 }

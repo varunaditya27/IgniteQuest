@@ -6,6 +6,7 @@ import { teamLogin } from "@/lib/actions/auth";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
+import { sfx } from "@/lib/sound/sfx";
 
 export function PinLoginForm() {
     const router = useRouter();
@@ -21,11 +22,14 @@ export function PinLoginForm() {
             const res = await teamLogin(pin);
             if (!res.success) {
                 setError(res.error ?? "Login failed.");
+                sfx.error();
                 return;
             }
+            sfx.pinSuccess();
             router.refresh();
         } catch {
             setError("Something went wrong — check your connection and try again.");
+            sfx.error();
         } finally {
             setPending(false);
         }

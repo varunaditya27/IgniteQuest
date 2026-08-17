@@ -15,6 +15,7 @@ import {
 } from "@/lib/actions/host-phase1";
 import { gameConfig } from "@/lib/config";
 import { cn } from "@/lib/utils";
+import { sfx } from "@/lib/sound/sfx";
 import type { GameStateWithRelations, TeamForHost } from "@/components/host/HostConsole";
 
 type Props = { gameState: GameStateWithRelations; teams: TeamForHost[]; totalQuestions: number };
@@ -32,13 +33,18 @@ export function Phase1Panel({ gameState, teams, totalQuestions }: Props) {
     const activeTeam = teams.find((t) => t.id === gameState.activeTeamId);
     const eligibleTeams = teams.filter((t) => !t.eliminated);
 
-    async function run(action: () => Promise<unknown>) {
+    // Host-side feedback fires immediately on click rather than waiting for the
+    // broadcast round-trip — the projector's own QuestionDisplay plays its reveal/
+    // correct cues independently once GAME_STATE_CHANGED actually lands.
+    async function run(action: () => Promise<unknown>, onSuccess?: () => void) {
         setPending(true);
         setActionError(null);
         try {
             await action();
+            onSuccess?.();
         } catch {
             setActionError("Action failed — check your connection and try again.");
+            sfx.error();
         } finally {
             setPending(false);
         }
@@ -95,16 +101,16 @@ export function Phase1Panel({ gameState, teams, totalQuestions }: Props) {
                     </div>
 
                     <div className="flex flex-wrap gap-3 mb-4">
-                        <Button onClick={() => run(revealCurrentQuestion)} disabled={pending || gameState.questionRevealed}>
+                        <Button onClick={() => run(revealCurrentQuestion, sfx.reveal)} disabled={pending || gameState.questionRevealed}>
                             Reveal
                         </Button>
-                        <Button onClick={() => run(() => recordPhase1Answer(true))} disabled={pending || !gameState.questionRevealed} variant="success">
+                        <Button onClick={() => run(() => recordPhase1Answer(true), sfx.correctDing)} disabled={pending || !gameState.questionRevealed} variant="success">
                             Correct
                         </Button>
-                        <Button onClick={() => run(() => recordPhase1Answer(false))} disabled={pending || !gameState.questionRevealed} variant="destructive">
+                        <Button onClick={() => run(() => recordPhase1Answer(false), sfx.buzzer)} disabled={pending || !gameState.questionRevealed} variant="destructive">
                             Wrong
                         </Button>
-                        <Button onClick={() => run(advanceToNextPhase1Question)} disabled={pending} variant="secondary" className="ml-auto">
+                        <Button onClick={() => run(advanceToNextPhase1Question, sfx.cardChange)} disabled={pending} variant="secondary" className="ml-auto">
                             Next Question →
                         </Button>
                     </div>
@@ -172,8 +178,10 @@ function EndPhase1Button({
                     setError(null);
                     try {
                         await lockPhase1AndSelectFinalists();
+                        sfx.cardChange();
                     } catch {
                         setError("Failed to lock Phase 1 — check your connection and try again.");
+                        sfx.error();
                         setEnding(false);
                     }
                 }}

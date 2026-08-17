@@ -1,13 +1,22 @@
 "use client";
 
+import { useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { cn } from "@/lib/utils";
+import { sfx } from "@/lib/sound/sfx";
 
 type Entry = { id: string; name: string; score: number };
 
 export function Leaderboard({ teams }: { teams: Entry[] }) {
     const sorted = [...teams].sort((a, b) => b.score - a.score);
+    const totalScore = teams.reduce((sum, t) => sum + t.score, 0);
+    const prevTotal = useRef(totalScore);
+
+    useEffect(() => {
+        if (totalScore !== prevTotal.current) sfx.pointsChime();
+        prevTotal.current = totalScore;
+    }, [totalScore]);
 
     return (
         <Card className="h-full bg-stage-black-raised/90 backdrop-blur-sm rounded-lg">

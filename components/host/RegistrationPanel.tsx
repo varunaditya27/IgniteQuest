@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { startPhase1 } from "@/lib/actions/host-phase1";
+import { sfx } from "@/lib/sound/sfx";
 import type { TeamForHost } from "@/components/host/HostConsole";
 
 export function RegistrationPanel({ teams, hasQuestions }: { teams: TeamForHost[]; hasQuestions: boolean }) {
@@ -42,8 +43,10 @@ export function RegistrationPanel({ teams, hasQuestions }: { teams: TeamForHost[
                             setError(null);
                             try {
                                 await startPhase1();
+                                sfx.reveal();
                             } catch {
                                 setError("Failed to start Phase 1 — check your connection and try again.");
+                                sfx.error();
                                 setStarting(false);
                             }
                         }}

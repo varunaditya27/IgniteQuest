@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Timer } from "@/components/shared/Timer";
 import { startNextPhase2Question, lockPhase2Question, computeFinalStandings, revealFinale } from "@/lib/actions/host-phase2";
 import { gameConfig } from "@/lib/config";
+import { sfx } from "@/lib/sound/sfx";
 import type { FastestFingersResult } from "@/lib/game/scoring";
 import type { GameStateWithRelations, TeamForHost, QuestionRow } from "@/components/host/HostConsole";
 
@@ -17,13 +18,15 @@ export function Phase2Panel({ gameState, teams, phase2Questions }: Props) {
     const [actionError, setActionError] = useState<string | null>(null);
     const finalists = teams.filter((t) => !t.eliminated);
 
-    async function run(action: () => Promise<unknown>) {
+    async function run(action: () => Promise<unknown>, onSuccess?: () => void) {
         setPending(true);
         setActionError(null);
         try {
             await action();
+            onSuccess?.();
         } catch {
             setActionError("Action failed — check your connection and try again.");
+            sfx.error();
         } finally {
             setPending(false);
         }
@@ -76,7 +79,7 @@ export function Phase2Panel({ gameState, teams, phase2Questions }: Props) {
                     <div className="flex gap-3 mt-4">
                         {gameState.phase !== "FINALE" && (
                             <Button
-                                onClick={() => run(startNextPhase2Question)}
+                                onClick={() => run(startNextPhase2Question, sfx.reveal)}
                                 disabled={pending || (!!gameState.currentQuestion && !gameState.answerLocked)}
                             >
                                 Start Next Question
@@ -84,7 +87,7 @@ export function Phase2Panel({ gameState, teams, phase2Questions }: Props) {
                         )}
                         {gameState.currentQuestion && (
                             <Button
-                                onClick={() => run(lockPhase2Question)}
+                                onClick={() => run(lockPhase2Question, sfx.hostLock)}
                                 disabled={pending || gameState.answerLocked}
                                 variant="outline"
                             >
@@ -125,7 +128,7 @@ export function Phase2Panel({ gameState, teams, phase2Questions }: Props) {
                                 run(async () => {
                                     if (!confirm("Reveal the finale? This locks the final results.")) return;
                                     await revealFinale();
-                                })
+                                }, sfx.drumroll)
                             }
                         >
                             REVEAL FINALE

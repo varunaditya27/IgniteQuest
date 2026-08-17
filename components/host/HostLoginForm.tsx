@@ -7,6 +7,7 @@ import { hostLogin } from "@/lib/actions/auth";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
+import { sfx } from "@/lib/sound/sfx";
 
 export function HostLoginForm() {
     const router = useRouter();
@@ -23,11 +24,14 @@ export function HostLoginForm() {
             const res = await hostLogin(password);
             if (!res.success) {
                 setError(res.error ?? "Login failed.");
+                sfx.error();
                 return;
             }
+            sfx.pinSuccess();
             router.push("/host");
         } catch {
             setError("Something went wrong — check your connection and try again.");
+            sfx.error();
         } finally {
             setPending(false);
         }
