@@ -29,9 +29,14 @@ export function LifelineButtons({ usedTypes, disabled }: { usedTypes: LifelineTy
                             onClick={async () => {
                                 setPending(l.type);
                                 setError(null);
-                                const res = await l.action();
-                                if (!res.success) setError(res.error ?? "Failed.");
-                                setPending(null);
+                                try {
+                                    const res = await l.action();
+                                    if (!res.success) setError(res.error ?? "Failed.");
+                                } catch {
+                                    setError("Something went wrong — check your connection and try again.");
+                                } finally {
+                                    setPending(null);
+                                }
                             }}
                             className="border-white/20 text-white disabled:opacity-30"
                         >

@@ -8,6 +8,7 @@ import type { TeamForHost } from "@/components/host/HostConsole";
 
 export function RegistrationPanel({ teams, hasQuestions }: { teams: TeamForHost[]; hasQuestions: boolean }) {
     const [starting, setStarting] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -38,12 +39,19 @@ export function RegistrationPanel({ teams, hasQuestions }: { teams: TeamForHost[
                         disabled={starting || teams.length === 0 || !hasQuestions}
                         onClick={async () => {
                             setStarting(true);
-                            await startPhase1();
+                            setError(null);
+                            try {
+                                await startPhase1();
+                            } catch {
+                                setError("Failed to start Phase 1 — check your connection and try again.");
+                                setStarting(false);
+                            }
                         }}
                         className="w-full bg-prestige-gold text-royal-black hover:bg-electric-yellow font-bold"
                     >
                         {starting ? "Starting…" : "START PHASE 1"}
                     </Button>
+                    {error && <p className="text-carmine-red text-sm mt-2">{error}</p>}
                 </CardContent>
             </Card>
         </div>

@@ -18,14 +18,18 @@ export function RegisterForm() {
         setPending(true);
         setError(null);
 
-        const res = await registerTeam(teamName, leaderName);
-        setPending(false);
-
-        if (!res.success) {
-            setError(res.error);
-            return;
+        try {
+            const res = await registerTeam(teamName, leaderName);
+            if (!res.success) {
+                setError(res.error);
+                return;
+            }
+            setResult({ pin: res.pin, teamName });
+        } catch {
+            setError("Something went wrong — check your connection and try again.");
+        } finally {
+            setPending(false);
         }
-        setResult({ pin: res.pin, teamName });
     }
 
     if (result) {

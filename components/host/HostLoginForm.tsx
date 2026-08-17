@@ -17,13 +17,18 @@ export function HostLoginForm() {
         e.preventDefault();
         setPending(true);
         setError(null);
-        const res = await hostLogin(password);
-        setPending(false);
-        if (!res.success) {
-            setError(res.error ?? "Login failed.");
-            return;
+        try {
+            const res = await hostLogin(password);
+            if (!res.success) {
+                setError(res.error ?? "Login failed.");
+                return;
+            }
+            router.push("/host");
+        } catch {
+            setError("Something went wrong — check your connection and try again.");
+        } finally {
+            setPending(false);
         }
-        router.push("/host");
     }
 
     return (

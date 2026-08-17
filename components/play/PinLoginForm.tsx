@@ -17,13 +17,18 @@ export function PinLoginForm() {
         e.preventDefault();
         setPending(true);
         setError(null);
-        const res = await teamLogin(pin);
-        setPending(false);
-        if (!res.success) {
-            setError(res.error ?? "Login failed.");
-            return;
+        try {
+            const res = await teamLogin(pin);
+            if (!res.success) {
+                setError(res.error ?? "Login failed.");
+                return;
+            }
+            router.refresh();
+        } catch {
+            setError("Something went wrong — check your connection and try again.");
+        } finally {
+            setPending(false);
         }
-        router.refresh();
     }
 
     return (

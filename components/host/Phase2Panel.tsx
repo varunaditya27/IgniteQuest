@@ -12,12 +12,16 @@ type Props = { gameState: GameStateWithRelations; teams: TeamForHost[]; phase2Qu
 export function Phase2Panel({ gameState, teams, phase2Questions }: Props) {
     const [standings, setStandings] = useState<(FastestFingersResult & { name: string })[] | null>(null);
     const [pending, setPending] = useState(false);
+    const [actionError, setActionError] = useState<string | null>(null);
     const finalists = teams.filter((t) => !t.eliminated);
 
     async function run(action: () => Promise<unknown>) {
         setPending(true);
+        setActionError(null);
         try {
             await action();
+        } catch {
+            setActionError("Action failed — check your connection and try again.");
         } finally {
             setPending(false);
         }
@@ -112,6 +116,7 @@ export function Phase2Panel({ gameState, teams, phase2Questions }: Props) {
                             REVEAL FINALE
                         </Button>
                     )}
+                    {actionError && <p className="text-carmine-red text-sm mt-2">{actionError}</p>}
                 </CardContent>
             </Card>
         </div>

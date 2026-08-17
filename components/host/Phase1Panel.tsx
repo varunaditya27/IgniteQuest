@@ -27,14 +27,18 @@ export function Phase1Panel({ gameState, teams, totalQuestions }: Props) {
     // the race that made scoring corrections unreliable. One flag, not per-button state,
     // since only one of these should ever be in flight at a time regardless of which.
     const [pending, setPending] = useState(false);
+    const [actionError, setActionError] = useState<string | null>(null);
     const question = gameState.currentQuestion;
     const activeTeam = teams.find((t) => t.id === gameState.activeTeamId);
     const eligibleTeams = teams.filter((t) => !t.eliminated);
 
     async function run(action: () => Promise<unknown>) {
         setPending(true);
+        setActionError(null);
         try {
             await action();
+        } catch {
+            setActionError("Action failed — check your connection and try again.");
         } finally {
             setPending(false);
         }
@@ -107,6 +111,7 @@ export function Phase1Panel({ gameState, teams, totalQuestions }: Props) {
                             Next Question →
                         </Button>
                     </div>
+                    {actionError && <p className="text-carmine-red text-sm mb-4">{actionError}</p>}
 
                     <EndPhase1Button ending={ending} setEnding={setEnding} disabled={pending} />
                 </CardContent>
@@ -178,17 +183,28 @@ function EndPhase1Button({
     setEnding: (v: boolean) => void;
     disabled: boolean;
 }) {
+    const [error, setError] = useState<string | null>(null);
+
     return (
-        <Button
-            variant="destructive"
-            disabled={ending || disabled}
-            onClick={async () => {
-                if (!confirm("Lock scores and select finalists? This ends Phase 1.")) return;
-                setEnding(true);
-                await lockPhase1AndSelectFinalists();
-            }}
-        >
-            {ending ? "Locking…" : "END PHASE 1 → SELECT FINALISTS"}
-        </Button>
+        <div>
+            <Button
+                variant="destructive"
+                disabled={ending || disabled}
+                onClick={async () => {
+                    if (!confirm("Lock scores and select finalists? This ends Phase 1.")) return;
+                    setEnding(true);
+                    setError(null);
+                    try {
+                        await lockPhase1AndSelectFinalists();
+                    } catch {
+                        setError("Failed to lock Phase 1 — check your connection and try again.");
+                        setEnding(false);
+                    }
+                }}
+            >
+                {ending ? "Locking…" : "END PHASE 1 → SELECT FINALISTS"}
+            </Button>
+            {error && <p className="text-carmine-red text-sm mt-2">{error}</p>}
+        </div>
     );
 }
