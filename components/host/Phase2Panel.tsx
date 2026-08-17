@@ -74,13 +74,15 @@ export function Phase2Panel({ gameState, teams, phase2Questions }: Props) {
                     })}
 
                     <div className="flex gap-3 mt-4">
-                        <Button
-                            onClick={() => run(startNextPhase2Question)}
-                            disabled={pending || (!!gameState.currentQuestion && !gameState.answerLocked)}
-                            className="bg-prestige-gold text-royal-black disabled:opacity-40"
-                        >
-                            Start Next Question
-                        </Button>
+                        {gameState.phase !== "FINALE" && (
+                            <Button
+                                onClick={() => run(startNextPhase2Question)}
+                                disabled={pending || (!!gameState.currentQuestion && !gameState.answerLocked)}
+                                className="bg-prestige-gold text-royal-black disabled:opacity-40"
+                            >
+                                Start Next Question
+                            </Button>
+                        )}
                         {gameState.currentQuestion && (
                             <Button
                                 onClick={() => run(lockPhase2Question)}
