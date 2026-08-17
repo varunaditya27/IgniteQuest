@@ -4,10 +4,10 @@ import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { LifelineButtons } from "@/components/host/LifelineButtons";
+import { Phase1ScoresList } from "@/components/host/Phase1ScoresList";
 import { Timer } from "@/components/shared/Timer";
 import {
     revealCurrentQuestion,
-    lockCurrentAnswer,
     selectActiveTeam,
     recordPhase1Answer,
     advanceToNextPhase1Question,
@@ -98,9 +98,6 @@ export function Phase1Panel({ gameState, teams, totalQuestions }: Props) {
                         <Button onClick={() => run(revealCurrentQuestion)} disabled={pending || gameState.questionRevealed} className="bg-prestige-gold text-royal-black disabled:opacity-40">
                             Reveal
                         </Button>
-                        <Button onClick={() => run(lockCurrentAnswer)} disabled={pending || !gameState.questionRevealed || gameState.answerLocked} variant="outline" className="border-white/20 text-white disabled:opacity-40">
-                            Lock
-                        </Button>
                         <Button onClick={() => run(() => recordPhase1Answer(true))} disabled={pending} className="bg-emerald-signal text-royal-black font-bold disabled:opacity-40">
                             Correct
                         </Button>
@@ -123,6 +120,9 @@ export function Phase1Panel({ gameState, teams, totalQuestions }: Props) {
                         <CardTitle>Active Team</CardTitle>
                     </CardHeader>
                     <CardContent>
+                        <p className="text-xs text-ivory-white/40 mb-2">
+                            Overrides this question only — round-robin picks the team again on Next Question.
+                        </p>
                         <select
                             value={gameState.activeTeamId ?? ""}
                             onChange={(e) => run(() => selectActiveTeam(e.target.value))}
@@ -144,31 +144,7 @@ export function Phase1Panel({ gameState, teams, totalQuestions }: Props) {
                     </CardContent>
                 </Card>
 
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Scores</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-1">
-                        <p className="text-xs text-ivory-white/40 mb-2">
-                            Ordered as finalists will be: score, then cumulative time as tiebreaker.
-                        </p>
-                        {[...teams]
-                            .map((t) => ({
-                                ...t,
-                                totalMs: t.answers.reduce((sum, a) => sum + (a.responseTimeMs ?? 0), 0),
-                            }))
-                            .sort((a, b) => (b.score !== a.score ? b.score - a.score : a.totalMs - b.totalMs))
-                            .map((t) => (
-                                <div key={t.id} className="flex justify-between items-baseline font-montserrat">
-                                    <span className={t.eliminated ? "text-ivory-white/30 line-through" : ""}>{t.name}</span>
-                                    <span className="flex items-baseline gap-2">
-                                        <span className="text-ivory-white/40 text-xs">{(t.totalMs / 1000).toFixed(1)}s</span>
-                                        <span className="text-prestige-gold font-bold">{t.score}</span>
-                                    </span>
-                                </div>
-                            ))}
-                    </CardContent>
-                </Card>
+                <Phase1ScoresList teams={teams} />
             </div>
         </div>
     );

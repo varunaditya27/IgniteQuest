@@ -39,13 +39,13 @@ export async function getPhaseQuestionsInOrder(eventId: string, phase: "PHASE_1"
     });
 }
 
-// Phase 1 questions never yet shown on screen. A question is "used up" by being
-// displayed (GameState.currentQuestion), not just by being scored — see
+// Questions never yet shown on screen, in either phase. A question is "used up" by
+// being displayed (GameState.currentQuestion), not just by being scored — see
 // Question.presentedAt. Ordered ascending, so "next in the curriculum sequence" is
 // just the first entry.
-export async function getUnusedPhase1Questions(eventId: string) {
+export async function getUnusedQuestions(eventId: string, phase: "PHASE_1" | "PHASE_2") {
     return prisma.question.findMany({
-        where: { eventId, phase: "PHASE_1", presentedAt: null },
+        where: { eventId, phase, presentedAt: null },
         orderBy: { order: "asc" },
     });
 }

@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { env } from "@/lib/env";
 import { Prisma, LifelineType } from "@prisma/client";
 import { requireHost } from "@/lib/actions/guard";
-import { getGameStateWithRelations, getUnusedPhase1Questions } from "@/lib/game/queries";
+import { getGameStateWithRelations, getUnusedQuestions } from "@/lib/game/queries";
 import { toGameStateEvent } from "@/lib/game/sanitize";
 import { broadcast } from "@/lib/realtime/broadcast";
 
@@ -96,7 +96,7 @@ export async function useSwitchQuestion(): Promise<LifelineResult> {
 
     // Same "unused" pool the normal round-robin draws from (presentedAt === null), so
     // a switched-away question — original or replacement — can never resurface later.
-    const candidates = await getUnusedPhase1Questions(env.eventId);
+    const candidates = await getUnusedQuestions(env.eventId, "PHASE_1");
     if (candidates.length === 0) {
         return { success: false, error: "No eligible replacement question available." };
     }

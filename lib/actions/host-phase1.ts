@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { env } from "@/lib/env";
 import { gameConfig } from "@/lib/config";
 import { requireHost, assertPhase } from "@/lib/actions/guard";
-import { getGameStateWithRelations, getTeamsForHost, getUnusedPhase1Questions } from "@/lib/game/queries";
+import { getGameStateWithRelations, getTeamsForHost, getUnusedQuestions } from "@/lib/game/queries";
 import { teamForTurn } from "@/lib/game/round-robin";
 import { rankPhase1, pickFinalists } from "@/lib/game/scoring";
 import { toGameStateEvent } from "@/lib/game/sanitize";
@@ -31,7 +31,7 @@ export async function startPhase1() {
 
     const [teams, unused] = await Promise.all([
         getTeamsForHost(env.eventId),
-        getUnusedPhase1Questions(env.eventId),
+        getUnusedQuestions(env.eventId, "PHASE_1"),
     ]);
     const firstQuestion = unused[0] ?? null;
     const firstTeam = firstQuestion ? teamForTurn(teams, 1) : null;
@@ -62,16 +62,6 @@ export async function revealCurrentQuestion() {
     const result = await prisma.gameState.updateMany({
         where: { eventId: env.eventId, phase: GamePhase.PHASE_1 },
         data: { questionRevealed: true, questionStartedAt: new Date(), answerLocked: false },
-    });
-    if (result.count === 0) throw new Error("Not in Phase 1.");
-    await broadcastState();
-}
-
-export async function lockCurrentAnswer() {
-    await requireHost();
-    const result = await prisma.gameState.updateMany({
-        where: { eventId: env.eventId, phase: GamePhase.PHASE_1 },
-        data: { answerLocked: true },
     });
     if (result.count === 0) throw new Error("Not in Phase 1.");
     await broadcastState();
@@ -143,7 +133,7 @@ export async function advanceToNextPhase1Question() {
 
     const [teams, unused] = await Promise.all([
         getTeamsForHost(env.eventId),
-        getUnusedPhase1Questions(env.eventId),
+        getUnusedQuestions(env.eventId, "PHASE_1"),
     ]);
 
     const next = unused[0] ?? null;
