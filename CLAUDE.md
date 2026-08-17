@@ -46,6 +46,41 @@ document wins unless the user has explicitly changed direction in conversation.
 10. **TypeScript strict, no `any`.** Type Prisma results properly; if a shape is
     reused across files, name it and export it from the module that owns the data.
 
+## UI design rules (enforced, not stylistic preference)
+
+IgniteQuest's visual identity is a KBC/Family-Feud gold-foil-on-stage-black game
+show — Bodoni Moda / Anton / Montserrat / Archivo type system, the `foil-gold` /
+`stage-black` / `champagne` token set in `app/globals.css`. These rules exist to
+keep every future change from drifting back into generic AI-generated SaaS
+template look ("AI slop"):
+
+1. **No shadcn-default look.** No `rounded-xl` card grids, no purple/blue gradient
+   glows, no glassmorphism (`backdrop-blur` + translucent white card). If a
+   component looks like it could be copy-pasted onto any other SaaS product
+   unchanged, it's wrong for this app.
+2. **No default-centered-page-with-one-card layout.** Not every screen is a form.
+   A scoreboard is a ladder, not a list inside a `Card`. A host control surface is
+   a control panel/dashboard shell, not a stack of generic cards. Pick a layout
+   shape that matches what the content *is*, not a reusable box that fits
+   everything equally badly.
+3. **One shadow/depth recipe per surface type, defined once.** Don't invent a new
+   `shadow-[...]` arbitrary value per component — reuse the stage-panel/foil-text/
+   spotlight utilities in `globals.css`, or extend that file, rather than
+   freehanding a new glow every time.
+4. **Every interactive state must be designed, not improvised.** Default, hover,
+   disabled, pending/loading, error, and empty states all need an explicit look —
+   "it'll just be default browser styling" is not acceptable for any state a user
+   can actually reach.
+5. **No filler UI text.** Labels, headings, and copy must be the minimum needed to
+   convey the action or state. No restating the obvious, no marketing-voice
+   subheadings nobody asked for.
+6. **Server actions that a client needs to react to immediately must return the
+   fresh state**, not force the caller to `router.refresh()` and wait on a second
+   round trip. `router.refresh()` / polling is for cross-client resync only (e.g.
+   picking up a change made by a different session), never the primary path for
+   the client that just performed the action — that round trip is exactly what
+   caused the input lag and stale-score bugs this rule exists to prevent.
+
 ## Before committing
 
 - Run `npm run lint` and `npm run build` (or at minimum `tsc --noEmit`).

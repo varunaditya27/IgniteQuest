@@ -2,7 +2,6 @@
 
 import { useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { cn } from "@/lib/utils";
 import { sfx } from "@/lib/sound/sfx";
 
@@ -19,48 +18,37 @@ export function Leaderboard({ teams }: { teams: Entry[] }) {
     }, [totalScore]);
 
     return (
-        <Card className="h-full bg-stage-black-raised/90 backdrop-blur-sm rounded-lg">
-            <CardHeader className="pb-4 border-b border-white/5">
-                <CardTitle className="text-2xl flex items-center gap-2 font-montserrat tracking-widest uppercase not-italic font-bold">
-                    <span className="text-spotlight-amber">&#9733;</span> Leaderboard
-                </CardTitle>
-            </CardHeader>
-            <CardContent className="p-0 overflow-y-auto max-h-[70vh]">
-                <ul className="flex flex-col">
-                    <AnimatePresence>
-                        {sorted.map((team, index) => (
-                            <motion.li
-                                key={team.id}
-                                layout
-                                initial={{ opacity: 0, x: 20 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                exit={{ opacity: 0, x: -20 }}
-                                transition={{ type: "spring", stiffness: 300, damping: 30 }}
+        <div className="w-full">
+            <p className="font-montserrat text-[11px] tracking-[0.35em] uppercase text-foil-gold/70 mb-2 px-1">Leaderboard</p>
+            <ol className="flex flex-col">
+                <AnimatePresence>
+                    {sorted.map((team, index) => (
+                        <motion.li
+                            key={team.id}
+                            layout
+                            initial={{ opacity: 0, x: 20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: -20 }}
+                            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                            className={cn(
+                                "flex items-center gap-3 border-b border-white/5 py-2.5 px-1",
+                                index === 0 && "border-l-2 border-l-foil-gold pl-2"
+                            )}
+                        >
+                            <span
                                 className={cn(
-                                    "relative flex items-center justify-between p-4 border-b border-white/5",
-                                    index === 0 ? "bg-gradient-to-r from-foil-gold/15 to-transparent" : ""
+                                    "font-anton text-lg w-6 text-center",
+                                    index === 0 ? "text-foil-gold" : index === 1 ? "text-silver-medal" : index === 2 ? "text-bronze-medal" : "text-champagne/30"
                                 )}
                             >
-                                <div className="flex items-center gap-4">
-                                    <div
-                                        className={cn(
-                                            "flex items-center justify-center w-8 h-8 rounded-full font-anton text-lg",
-                                            index === 0 ? "bg-foil-gold text-stage-black" :
-                                                index === 1 ? "bg-silver-medal text-stage-black" :
-                                                    index === 2 ? "bg-bronze-medal text-stage-black" :
-                                                        "bg-white/10 text-champagne/50"
-                                        )}
-                                    >
-                                        {index + 1}
-                                    </div>
-                                    <span className="font-montserrat font-semibold truncate max-w-[150px]">{team.name}</span>
-                                </div>
-                                <span className="font-anton text-xl text-foil-gold-bright">{team.score.toLocaleString()}</span>
-                            </motion.li>
-                        ))}
-                    </AnimatePresence>
-                </ul>
-            </CardContent>
-        </Card>
+                                {index + 1}
+                            </span>
+                            <span className="flex-1 font-montserrat text-sm truncate">{team.name}</span>
+                            <span className="font-anton text-lg text-foil-gold-bright">{team.score.toLocaleString()}</span>
+                        </motion.li>
+                    ))}
+                </AnimatePresence>
+            </ol>
+        </div>
     );
 }

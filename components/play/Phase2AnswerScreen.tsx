@@ -5,7 +5,6 @@ import { useGameChannel } from "@/hooks/useGameChannel";
 import { getPublicSnapshot } from "@/lib/actions/queries";
 import { submitPhase2Answer } from "@/lib/actions/gameplay";
 import { teamLogout } from "@/lib/actions/auth";
-import { Button } from "@/components/ui/Button";
 import { Timer } from "@/components/shared/Timer";
 import { gameConfig } from "@/lib/config";
 import { cn } from "@/lib/utils";
@@ -54,10 +53,10 @@ export function Phase2AnswerScreen({ eventId, teamName, ...initial }: Props) {
     );
 
     if (state.phase === "FINALE") {
-        return <StatusScreen teamName={teamName} message="The Final Sprint is complete. Watch the projector!" />;
+        return <StatusScreen teamName={teamName} message="Watch the projector." />;
     }
     if (state.phase !== "PHASE_2" || !state.question || !state.revealed) {
-        return <StatusScreen teamName={teamName} message="Waiting for the host to start the next question…" />;
+        return <StatusScreen teamName={teamName} message="Waiting for the next question…" />;
     }
 
     return (
@@ -112,38 +111,45 @@ function QuestionAnswerForm({
     }
 
     return (
-        <main className="stage-spotlight min-h-screen text-champagne flex flex-col items-center justify-center p-4 gap-6">
-            <p className="text-foil-gold-bright font-montserrat tracking-widest uppercase text-sm">{teamName}</p>
-            {startedAt && (
-                <Timer startedAt={startedAt} limitSeconds={question.timeLimitSeconds ?? gameConfig.phase2TimeLimitSeconds} />
-            )}
-            {question.codeSnippet && (
-                <pre className="bg-stage-black-deep p-3 rounded text-sm w-full max-w-md overflow-x-auto border border-white/5">{question.codeSnippet}</pre>
-            )}
-            <p className="text-xl text-center font-bodoni">{question.text}</p>
-            <div className="grid grid-cols-1 gap-3 w-full max-w-md">
-                {question.options.map((opt, i) => (
-                    <Button
-                        key={i}
-                        size="lg"
-                        disabled={locked}
-                        onClick={() => handleSubmit(i)}
-                        variant={selected === i ? "default" : "secondary"}
-                        className={cn("justify-start text-left normal-case font-archivo font-normal text-base")}
-                    >
-                        <span className="font-anton mr-2">{String.fromCharCode(65 + i)}</span> {opt}
-                    </Button>
-                ))}
+        <main className="stage-spotlight min-h-screen flex flex-col p-4">
+            <div className="flex items-center justify-between mb-6">
+                <span className="font-montserrat text-xs tracking-[0.3em] uppercase text-foil-gold/70">{teamName}</span>
+                {startedAt && <Timer startedAt={startedAt} limitSeconds={question.timeLimitSeconds ?? gameConfig.phase2TimeLimitSeconds} />}
             </div>
-            {error && <p className="text-buzzer-red text-sm">{error}</p>}
-            {submitted && <p className="text-correct-emerald font-bold">Answer locked in!</p>}
+
+            <div className="flex-1 flex flex-col justify-center max-w-md w-full mx-auto gap-6">
+                {question.codeSnippet && (
+                    <pre className="bg-stage-black-deep p-3 rounded-sm text-sm overflow-x-auto border border-white/5">{question.codeSnippet}</pre>
+                )}
+                <p className="text-xl text-center font-bodoni">{question.text}</p>
+                <div className="grid grid-cols-1 gap-3">
+                    {question.options.map((opt, i) => (
+                        <button
+                            key={i}
+                            disabled={locked}
+                            onClick={() => handleSubmit(i)}
+                            className={cn(
+                                "flex items-center gap-3 p-4 rounded-sm border text-left text-base transition-colors disabled:opacity-50",
+                                selected === i
+                                    ? "border-foil-gold bg-foil-gold/15 text-foil-gold-bright"
+                                    : "border-white/10 bg-stage-black-raised/60 hover:border-foil-gold/40"
+                            )}
+                        >
+                            <span className="font-anton text-lg">{String.fromCharCode(65 + i)}</span>
+                            {opt}
+                        </button>
+                    ))}
+                </div>
+                {error && <p className="text-buzzer-red text-sm text-center">{error}</p>}
+                {submitted && <p className="text-correct-emerald font-bold text-center">Locked in.</p>}
+            </div>
         </main>
     );
 }
 
 function StatusScreen({ teamName, message }: { teamName: string; message: string }) {
     return (
-        <main className="stage-spotlight min-h-screen text-champagne flex flex-col items-center justify-center p-4 gap-4 text-center">
+        <main className="stage-spotlight min-h-screen flex flex-col items-center justify-center p-4 gap-4 text-center">
             <p className="text-foil-gold-bright font-montserrat tracking-widest uppercase text-sm">{teamName}</p>
             <p className="text-xl text-champagne/70 font-bodoni">{message}</p>
             <form action={teamLogout}>

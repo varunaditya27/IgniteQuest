@@ -1,8 +1,9 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useState } from "react";
 import type { getGameStateWithRelations, getTeamsForHost, getPhaseQuestionsInOrder } from "@/lib/game/queries";
 import { useGameChannel } from "@/hooks/useGameChannel";
+import { getHostSnapshot } from "@/lib/actions/host-phase1";
 import { RegistrationPanel } from "@/components/host/RegistrationPanel";
 import { Phase1Panel } from "@/components/host/Phase1Panel";
 import { Phase2Panel } from "@/components/host/Phase2Panel";
@@ -12,6 +13,7 @@ import { sfx } from "@/lib/sound/sfx";
 export type GameStateWithRelations = Awaited<ReturnType<typeof getGameStateWithRelations>>;
 export type TeamForHost = Awaited<ReturnType<typeof getTeamsForHost>>[number];
 export type QuestionRow = Awaited<ReturnType<typeof getPhaseQuestionsInOrder>>[number];
+export type HostBundle = { gameState: GameStateWithRelations; teams: TeamForHost[] };
 
 type Props = {
     eventId: string;
@@ -22,50 +24,62 @@ type Props = {
 };
 
 export function HostConsole({ eventId, initialGameState, initialTeams, phase1Questions, phase2Questions }: Props) {
-    const router = useRouter();
+    const [gameState, setGameState] = useState(initialGameState);
+    const [teams, setTeams] = useState(initialTeams);
 
-    // Any broadcast (including ones this console caused) means server state
-    // moved on — re-fetch the server component so the host always sees the
-    // full row data (e.g. correctOption), not the sanitized public payload.
-    // Also refresh on every (re)connect: broadcast has no replay, so a host laptop
-    // that drops WiFi for a moment must still end up consistent, not stuck stale.
+    function applyBundle(bundle: HostBundle) {
+        setGameState(bundle.gameState);
+        setTeams(bundle.teams);
+    }
+
+    // Every host action already returns its own fresh bundle (applied by the
+    // caller directly) — this channel exists only to (a) chime when a team
+    // registers and (b) resync after a dropped connection, e.g. a second host
+    // tab or a laptop that briefly lost WiFi. It is not the primary update path.
     useGameChannel(
         eventId,
         (event) => {
-            if (event.type === "TEAM_REGISTERED") sfx.pinSuccess();
-            router.refresh();
+            if (event.type === "TEAM_REGISTERED") {
+                sfx.pinSuccess();
+                getHostSnapshot().then(applyBundle);
+            }
         },
-        () => router.refresh()
+        () => {
+            getHostSnapshot().then(applyBundle);
+        }
     );
 
-    const gameState = initialGameState;
-    const teams = initialTeams;
-
     return (
-        <main className="min-h-screen bg-stage-black p-6 text-champagne">
-            <header className="flex items-center justify-between mb-6 pb-4 border-b border-foil-gold/15">
-                <h1 className="text-2xl font-bodoni font-bold foil-text">Host Console</h1>
+        <div className="min-h-screen bg-stage-black text-champagne grid grid-cols-[auto_1fr] grid-rows-[auto_1fr]">
+            <div className="col-span-2 flex items-center justify-between border-b border-foil-gold/15 px-6 py-3">
+                <div className="flex items-baseline gap-3">
+                    <span className="font-bodoni text-lg foil-text">IgniteQuest</span>
+                    <span className="text-champagne/30">/</span>
+                    <span className="font-montserrat text-xs tracking-[0.3em] uppercase text-champagne/50">Host Console</span>
+                </div>
                 <div className="flex items-center gap-4">
-                    <span className="text-xs text-champagne/50 font-montserrat tracking-widest uppercase">Phase: {gameState.phase}</span>
+                    <span className="font-anton text-sm tracking-widest text-foil-gold-bright">{gameState.phase.replace("_", " ")}</span>
                     <form action={hostLogout}>
-                        <button className="text-sm text-champagne/50 hover:text-buzzer-red underline">
+                        <button className="text-xs text-champagne/40 hover:text-buzzer-red uppercase tracking-widest">
                             Log out
                         </button>
                     </form>
                 </div>
-            </header>
+            </div>
 
-            {gameState.phase === "REGISTRATION" && (
-                <RegistrationPanel teams={teams} hasQuestions={phase1Questions.length > 0} />
-            )}
+            <main className="col-span-2 p-6">
+                {gameState.phase === "REGISTRATION" && (
+                    <RegistrationPanel teams={teams} hasQuestions={phase1Questions.length > 0} onBundle={applyBundle} />
+                )}
 
-            {gameState.phase === "PHASE_1" && (
-                <Phase1Panel gameState={gameState} teams={teams} totalQuestions={phase1Questions.length} />
-            )}
+                {gameState.phase === "PHASE_1" && (
+                    <Phase1Panel gameState={gameState} teams={teams} totalQuestions={phase1Questions.length} onBundle={applyBundle} />
+                )}
 
-            {(gameState.phase === "PHASE_2" || gameState.phase === "FINALE") && (
-                <Phase2Panel gameState={gameState} teams={teams} phase2Questions={phase2Questions} />
-            )}
-        </main>
+                {(gameState.phase === "PHASE_2" || gameState.phase === "FINALE") && (
+                    <Phase2Panel gameState={gameState} teams={teams} phase2Questions={phase2Questions} onBundle={applyBundle} />
+                )}
+            </main>
+        </div>
     );
 }

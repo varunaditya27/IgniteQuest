@@ -1,4 +1,5 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
+import { Panel } from "@/components/ui/Panel";
+import { cn } from "@/lib/utils";
 import type { TeamForHost } from "@/components/host/HostConsole";
 
 export function Phase1ScoresList({ teams }: { teams: TeamForHost[] }) {
@@ -10,24 +11,17 @@ export function Phase1ScoresList({ teams }: { teams: TeamForHost[] }) {
         .sort((a, b) => (b.score !== a.score ? b.score - a.score : a.totalMs - b.totalMs));
 
     return (
-        <Card>
-            <CardHeader>
-                <CardTitle>Scores</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-1">
-                <p className="text-xs text-champagne/40 mb-2">
-                    Ordered as finalists will be: score, then cumulative time as tiebreaker.
-                </p>
-                {ranked.map((t) => (
-                    <div key={t.id} className="flex justify-between items-baseline font-montserrat">
-                        <span className={t.eliminated ? "text-champagne/30 line-through" : ""}>{t.name}</span>
-                        <span className="flex items-baseline gap-2">
-                            <span className="text-champagne/40 text-xs">{(t.totalMs / 1000).toFixed(1)}s</span>
-                            <span className="font-anton text-foil-gold-bright">{t.score}</span>
-                        </span>
-                    </div>
+        <Panel label="Scores">
+            <ol className="space-y-1">
+                {ranked.map((t, i) => (
+                    <li key={t.id} className="flex items-baseline gap-3 font-montserrat text-sm">
+                        <span className="w-4 text-champagne/30 font-anton">{i + 1}</span>
+                        <span className={cn("flex-1 truncate", t.eliminated && "text-champagne/30 line-through")}>{t.name}</span>
+                        <span className="text-champagne/35 text-xs">{(t.totalMs / 1000).toFixed(1)}s</span>
+                        <span className="font-anton text-foil-gold-bright w-14 text-right">{t.score}</span>
+                    </li>
                 ))}
-            </CardContent>
-        </Card>
+            </ol>
+        </Panel>
     );
 }

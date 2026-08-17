@@ -4,7 +4,7 @@ import { useState } from "react";
 import { registerTeam } from "@/lib/actions/registration";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
+import { Plaque } from "@/components/ui/Plaque";
 import { sfx } from "@/lib/sound/sfx";
 
 export function RegisterForm() {
@@ -38,57 +38,30 @@ export function RegisterForm() {
 
     if (result) {
         return (
-            <Card className="w-full max-w-md text-center">
-                <CardHeader>
-                    <CardTitle>You&apos;re Registered!</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                    <p className="font-montserrat text-champagne/80">
-                        Team <span className="text-foil-gold-bright font-bold">{result.teamName}</span> is in.
+            <Plaque title="You're In">
+                <div className="text-center space-y-4">
+                    <p className="font-montserrat text-champagne/80 text-sm">
+                        Team <span className="text-foil-gold-bright font-bold">{result.teamName}</span> — phones away now.
                     </p>
-                    <p className="text-champagne/60 text-sm">
-                        Save this PIN — you&apos;ll need it to log in for the Final Sprint if your team qualifies.
-                        Put your phone away now; the arena is host-controlled.
-                    </p>
-                    <div className="text-5xl font-anton tracking-[0.3em] text-foil-gold-bright py-4 border border-foil-gold/30 rounded-lg bg-stage-black-deep shadow-[inset_0_2px_8px_rgba(0,0,0,0.6)]">
+                    <p className="text-champagne/50 text-xs">Save this PIN for the Final Sprint.</p>
+                    <div className="text-5xl font-anton tracking-[0.3em] text-foil-gold-bright py-4 border border-foil-gold/30 bg-stage-black-deep">
                         {result.pin}
                     </div>
-                </CardContent>
-            </Card>
+                </div>
+            </Plaque>
         );
     }
 
     return (
-        <Card className="w-full max-w-md">
-            <CardHeader>
-                <CardTitle>Team Registration</CardTitle>
-            </CardHeader>
-            <CardContent>
-                <form onSubmit={handleSubmit} className="space-y-4">
-                    <div>
-                        <label className="block text-sm text-champagne/70 mb-1 font-montserrat">Team Name</label>
-                        <Input
-                            value={teamName}
-                            onChange={(e) => setTeamName(e.target.value)}
-                            required
-                            maxLength={40}
-                        />
-                    </div>
-                    <div>
-                        <label className="block text-sm text-champagne/70 mb-1 font-montserrat">Team Leader Name</label>
-                        <Input
-                            value={leaderName}
-                            onChange={(e) => setLeaderName(e.target.value)}
-                            required
-                            maxLength={40}
-                        />
-                    </div>
-                    {error && <p className="text-buzzer-red text-sm">{error}</p>}
-                    <Button type="submit" disabled={pending} className="w-full">
-                        {pending ? "Registering…" : "Register Team"}
-                    </Button>
-                </form>
-            </CardContent>
-        </Card>
+        <Plaque title="Team Registration">
+            <form onSubmit={handleSubmit} className="space-y-4">
+                <Input value={teamName} onChange={(e) => setTeamName(e.target.value)} required maxLength={40} placeholder="Team name" />
+                <Input value={leaderName} onChange={(e) => setLeaderName(e.target.value)} required maxLength={40} placeholder="Team leader name" />
+                {error && <p className="text-buzzer-red text-sm">{error}</p>}
+                <Button type="submit" disabled={pending} className="w-full">
+                    {pending ? "Registering…" : "Register Team"}
+                </Button>
+            </form>
+        </Plaque>
     );
 }

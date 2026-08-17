@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { env } from "@/lib/env";
 import { GamePhase } from "@prisma/client";
 import { requireHost } from "@/lib/actions/guard";
-import { getGameStateWithRelations, getUnusedQuestions, getFinalStandings } from "@/lib/game/queries";
+import { getGameStateWithRelations, getTeamsForHost, getUnusedQuestions, getFinalStandings } from "@/lib/game/queries";
 import type { FastestFingersResult } from "@/lib/game/scoring";
 import { toGameStateEvent } from "@/lib/game/sanitize";
 import { broadcast } from "@/lib/realtime/broadcast";
@@ -12,6 +12,11 @@ import { broadcast } from "@/lib/realtime/broadcast";
 async function broadcastState() {
     const state = await getGameStateWithRelations(env.eventId);
     await broadcast(env.eventId, toGameStateEvent(state));
+    return state;
+}
+
+async function bundleWith(gameState: Awaited<ReturnType<typeof getGameStateWithRelations>>) {
+    return { gameState, teams: await getTeamsForHost(env.eventId) };
 }
 
 // Always the lowest-order not-yet-shown Phase 2 question — strictly sequential, no
@@ -41,7 +46,7 @@ export async function startNextPhase2Question() {
         });
         if (result.count === 0) throw new Error("Not in Phase 2.");
     });
-    await broadcastState();
+    return bundleWith(await broadcastState());
 }
 
 export async function lockPhase2Question() {
@@ -51,7 +56,7 @@ export async function lockPhase2Question() {
         data: { answerLocked: true },
     });
     if (result.count === 0) throw new Error("Not in Phase 2.");
-    await broadcastState();
+    return bundleWith(await broadcastState());
 }
 
 // No live leaderboard during Phase 2 — see gpt-chat-reference.md section 10.
@@ -68,5 +73,5 @@ export async function revealFinale() {
         data: { phase: GamePhase.FINALE, currentQuestionId: null, questionStartedAt: null },
     });
     if (result.count === 0) throw new Error("Not in Phase 2.");
-    await broadcastState();
+    return bundleWith(await broadcastState());
 }

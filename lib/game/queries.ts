@@ -22,14 +22,23 @@ export async function getTeamsForHost(eventId: string) {
         orderBy: { createdAt: "asc" },
         include: {
             lifelineUsages: { select: { type: true } },
-            // Phase 1 response times only, for the host to see the finalist tie-break
-            // signal (score, then cumulative time) before locking scores.
+            // Phase 1 answers — responseTimeMs for the finalist tie-break signal, plus
+            // questionId/selectedOption so the host console can show which option was
+            // already judged for the current question without a second query.
             answers: {
                 where: { question: { phase: "PHASE_1" } },
-                select: { responseTimeMs: true },
+                select: { questionId: true, selectedOption: true, responseTimeMs: true },
             },
         },
     });
+}
+
+// The full privileged snapshot a host action hands back to its own caller so the
+// console can update instantly from the response instead of a second round trip
+// (router.refresh()) — see CLAUDE.md "UI design rules" #6.
+export async function getHostBundle(eventId: string) {
+    const [gameState, teams] = await Promise.all([getGameStateWithRelations(eventId), getTeamsForHost(eventId)]);
+    return { gameState, teams };
 }
 
 export async function getPhaseQuestionsInOrder(eventId: string, phase: "PHASE_1" | "PHASE_2") {

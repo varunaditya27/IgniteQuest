@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { env } from "@/lib/env";
 import { gameConfig } from "@/lib/config";
 import { requireHost, assertPhase } from "@/lib/actions/guard";
-import { getGameStateWithRelations, getTeamsForHost, getUnusedQuestions } from "@/lib/game/queries";
+import { getGameStateWithRelations, getTeamsForHost, getUnusedQuestions, getHostBundle } from "@/lib/game/queries";
 import { teamForTurn } from "@/lib/game/round-robin";
 import { rankPhase1, pickFinalists } from "@/lib/game/scoring";
 import { toGameStateEvent } from "@/lib/game/sanitize";
@@ -14,6 +14,7 @@ import { GamePhase } from "@prisma/client";
 async function broadcastState() {
     const state = await getGameStateWithRelations(env.eventId);
     await broadcast(env.eventId, toGameStateEvent(state));
+    return state;
 }
 
 async function broadcastScores() {
@@ -22,6 +23,22 @@ async function broadcastScores() {
         select: { id: true, name: true, score: true },
     });
     await broadcast(env.eventId, { type: "SCORE_UPDATED", payload: { teams } });
+}
+
+// Every mutating action below already has its own fresh GameState in hand by
+// the time it finishes (from broadcastState() or its own read) — pairing that
+// with one getTeamsForHost() call is the whole bundle, instead of re-fetching
+// GameState a second time via getHostBundle.
+async function bundleWith(gameState: Awaited<ReturnType<typeof getGameStateWithRelations>>) {
+    return { gameState, teams: await getTeamsForHost(env.eventId) };
+}
+
+// Resync-only — used after a dropped realtime connection reconnects. The
+// interactive path never needs this: every mutating action below returns its
+// own fresh bundle directly (CLAUDE.md "UI design rules" #6).
+export async function getHostSnapshot() {
+    await requireHost();
+    return getHostBundle(env.eventId);
 }
 
 export async function startPhase1() {
@@ -54,7 +71,10 @@ export async function startPhase1() {
             },
         });
     });
-    await broadcastState();
+    // `teams` was already fetched above for the round-robin calculation and this
+    // action never touches scores, so it's still fresh — no need for bundleWith's
+    // extra query to re-fetch what's already in hand.
+    return { gameState: await broadcastState(), teams };
 }
 
 export async function revealCurrentQuestion() {
@@ -64,7 +84,7 @@ export async function revealCurrentQuestion() {
         data: { questionRevealed: true, questionStartedAt: new Date(), answerLocked: false },
     });
     if (result.count === 0) throw new Error("Not in Phase 1.");
-    await broadcastState();
+    return bundleWith(await broadcastState());
 }
 
 export async function selectActiveTeam(teamId: string) {
@@ -81,18 +101,24 @@ export async function selectActiveTeam(teamId: string) {
         data: { activeTeamId: teamId },
     });
     if (result.count === 0) throw new Error("Not in Phase 1.");
-    await broadcastState();
+    return bundleWith(await broadcastState());
 }
 
-// Idempotent under re-scoring: if the host corrects a mistaken Correct/Wrong click,
-// the team's score moves by the *difference* from what was previously awarded for
-// this question, not by the full new amount again.
-export async function recordPhase1Answer(isCorrect: boolean) {
+// The host judges by clicking the option the team actually said out loud — the
+// server is the only thing that knows/decides correctness (CLAUDE.md rule 6),
+// there is no separate "mark correct" vs "mark wrong" control to keep in sync.
+// Idempotent under re-judging: if the host picks a different option for the same
+// question, the team's score moves by the *difference* from what was previously
+// awarded, not by the full new amount again.
+export async function recordPhase1Answer(selectedOption: number) {
     await requireHost();
     const state = await getGameStateWithRelations(env.eventId);
     assertPhase(state.phase, GamePhase.PHASE_1);
     if (!state.currentQuestion || !state.activeTeam) {
         throw new Error("No active question/team to record an answer for.");
+    }
+    if (selectedOption < 0 || selectedOption >= state.currentQuestion.options.length) {
+        throw new Error("Not a valid option for this question.");
     }
     // Scoring before Reveal would leave questionStartedAt unset, making
     // responseTimeMs null — which the tiebreak treats as 0ms, unfairly making that
@@ -103,11 +129,12 @@ export async function recordPhase1Answer(isCorrect: boolean) {
 
     const teamId = state.activeTeam.id;
     const questionId = state.currentQuestion.id;
+    const isCorrect = selectedOption === state.currentQuestion.correctOption;
     const points = isCorrect ? state.currentQuestion.points : gameConfig.wrongAnswerPoints;
     // Time from question reveal to this verdict — used as the Phase 1 finalist
     // tie-break (see lockPhase1AndSelectFinalists). Only set on the *first* verdict for
-    // this question; a later Correct/Wrong correction shouldn't retroactively change
-    // how long the team took to answer, just the outcome.
+    // this question; a later re-judgment shouldn't retroactively change how long the
+    // team took to answer, just the outcome.
     const responseTimeMs = Date.now() - state.questionStartedAt.getTime();
 
     await prisma.$transaction(async (tx) => {
@@ -119,17 +146,20 @@ export async function recordPhase1Answer(isCorrect: boolean) {
 
         await tx.teamAnswer.upsert({
             where: { teamId_questionId: { teamId, questionId } },
-            update: { isCorrect, pointsAwarded: points },
-            create: { teamId, questionId, isCorrect, pointsAwarded: points, responseTimeMs },
+            update: { isCorrect, selectedOption, pointsAwarded: points },
+            create: { teamId, questionId, isCorrect, selectedOption, pointsAwarded: points, responseTimeMs },
         });
         await tx.team.update({ where: { id: teamId }, data: { score: { increment: delta } } });
     });
 
-    await broadcastScores();
-    await broadcast(env.eventId, {
-        type: "ANSWER_REVEALED",
-        payload: { questionId, correctOption: state.currentQuestion.correctOption },
-    });
+    await Promise.all([
+        broadcastScores(),
+        broadcast(env.eventId, {
+            type: "ANSWER_REVEALED",
+            payload: { questionId, correctOption: state.currentQuestion.correctOption },
+        }),
+    ]);
+    return bundleWith(state);
 }
 
 export async function advanceToNextPhase1Question() {
@@ -163,7 +193,9 @@ export async function advanceToNextPhase1Question() {
             },
         });
     });
-    await broadcastState();
+    // `teams` was already fetched above and this action never touches scores —
+    // reuse it instead of bundleWith's extra round trip.
+    return { gameState: await broadcastState(), teams };
 }
 
 export async function lockPhase1AndSelectFinalists() {
@@ -202,6 +234,6 @@ export async function lockPhase1AndSelectFinalists() {
         }),
     ]);
 
-    await broadcastState();
-    await broadcastScores();
+    const [state] = await Promise.all([broadcastState(), broadcastScores()]);
+    return bundleWith(state);
 }

@@ -4,15 +4,22 @@ import { prisma } from "@/lib/prisma";
 import { env } from "@/lib/env";
 import { Prisma, LifelineType } from "@prisma/client";
 import { requireHost } from "@/lib/actions/guard";
-import { getGameStateWithRelations, getUnusedQuestions } from "@/lib/game/queries";
+import { getGameStateWithRelations, getTeamsForHost, getUnusedQuestions, getHostBundle } from "@/lib/game/queries";
 import { toGameStateEvent } from "@/lib/game/sanitize";
 import { broadcast } from "@/lib/realtime/broadcast";
 
-type LifelineResult = { success: true } | { success: false; error: string };
+type LifelineResult =
+    | { success: true; bundle: Awaited<ReturnType<typeof getHostBundle>> }
+    | { success: false; error: string };
 
 async function broadcastState() {
     const state = await getGameStateWithRelations(env.eventId);
     await broadcast(env.eventId, toGameStateEvent(state));
+    return state;
+}
+
+async function bundleWith(gameState: Awaited<ReturnType<typeof getGameStateWithRelations>>) {
+    return { gameState, teams: await getTeamsForHost(env.eventId) };
 }
 
 async function recordUsage(teamId: string, type: LifelineType, questionId: string, replacementQuestionId?: string) {
@@ -60,8 +67,7 @@ export async function useFiftyFifty(): Promise<LifelineResult> {
     const toHide = wrongIndices.sort(() => Math.random() - 0.5).slice(0, 2);
 
     await prisma.gameState.update({ where: { eventId: env.eventId }, data: { hiddenOptions: toHide } });
-    await broadcastState();
-    return { success: true };
+    return { success: true, bundle: await bundleWith(await broadcastState()) };
 }
 
 export async function useAskAudience(): Promise<LifelineResult> {
@@ -73,7 +79,7 @@ export async function useAskAudience(): Promise<LifelineResult> {
     const recorded = await recordUsage(team.id, LifelineType.ASK_AUDIENCE, question.id);
     if (!recorded) return { success: false, error: "Ask the Audience already used by this team." };
     await broadcast(env.eventId, { type: "LIFELINE_USED", payload: { teamId: team.id, lifeline: LifelineType.ASK_AUDIENCE } });
-    return { success: true };
+    return { success: true, bundle: await getHostBundle(env.eventId) };
 }
 
 export async function useAskExpert(): Promise<LifelineResult> {
@@ -85,7 +91,7 @@ export async function useAskExpert(): Promise<LifelineResult> {
     const recorded = await recordUsage(team.id, LifelineType.ASK_EXPERT, question.id);
     if (!recorded) return { success: false, error: "Ask the Expert already used by this team." };
     await broadcast(env.eventId, { type: "LIFELINE_USED", payload: { teamId: team.id, lifeline: LifelineType.ASK_EXPERT } });
-    return { success: true };
+    return { success: true, bundle: await getHostBundle(env.eventId) };
 }
 
 export async function useSwitchQuestion(): Promise<LifelineResult> {
@@ -118,6 +124,5 @@ export async function useSwitchQuestion(): Promise<LifelineResult> {
             },
         }),
     ]);
-    await broadcastState();
-    return { success: true };
+    return { success: true, bundle: await bundleWith(await broadcastState()) };
 }

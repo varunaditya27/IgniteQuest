@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { teamLogin } from "@/lib/actions/auth";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
+import { Plaque } from "@/components/ui/Plaque";
 import { sfx } from "@/lib/sound/sfx";
 
 export function PinLoginForm() {
@@ -36,27 +36,22 @@ export function PinLoginForm() {
     }
 
     return (
-        <Card className="w-full max-w-sm">
-            <CardHeader>
-                <CardTitle>Final Sprint Login</CardTitle>
-            </CardHeader>
-            <CardContent>
-                <form onSubmit={handleSubmit} className="space-y-4">
-                    <Input
-                        placeholder="Team PIN"
-                        value={pin}
-                        onChange={(e) => setPin(e.target.value.toUpperCase())}
-                        maxLength={6}
-                        required
-                        autoFocus
-                        className="text-center text-2xl tracking-[0.3em] font-anton"
-                    />
-                    {error && <p className="text-buzzer-red text-sm">{error}</p>}
-                    <Button type="submit" disabled={pending} className="w-full">
-                        {pending ? "Checking…" : "Enter"}
-                    </Button>
-                </form>
-            </CardContent>
-        </Card>
+        <Plaque title="Final Sprint Login">
+            <form onSubmit={handleSubmit} className="space-y-4">
+                <Input
+                    placeholder="Team PIN"
+                    value={pin}
+                    onChange={(e) => setPin(e.target.value.toUpperCase())}
+                    maxLength={6}
+                    required
+                    autoFocus
+                    className="text-center text-2xl tracking-[0.3em] font-anton"
+                />
+                {error && <p className="text-buzzer-red text-sm">{error}</p>}
+                <Button type="submit" disabled={pending} className="w-full">
+                    {pending ? "Checking…" : "Enter"}
+                </Button>
+            </form>
+        </Plaque>
     );
 }

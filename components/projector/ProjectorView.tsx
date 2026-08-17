@@ -111,7 +111,7 @@ export function ProjectorView({ eventId, initialLeaderboard, ...initial }: Props
             )}
 
             {state.phase === "PHASE_1" && (
-                <div className="absolute right-8 top-24 w-80">
+                <div className="absolute right-8 top-24 w-80 bg-stage-black-raised/70 border-l-2 border-foil-gold/40 p-4">
                     <Leaderboard teams={leaderboard} />
                 </div>
             )}

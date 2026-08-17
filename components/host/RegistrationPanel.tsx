@@ -2,61 +2,61 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/Button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
+import { Panel } from "@/components/ui/Panel";
 import { startPhase1 } from "@/lib/actions/host-phase1";
 import { sfx } from "@/lib/sound/sfx";
-import type { TeamForHost } from "@/components/host/HostConsole";
+import type { TeamForHost, HostBundle } from "@/components/host/HostConsole";
 
-export function RegistrationPanel({ teams, hasQuestions }: { teams: TeamForHost[]; hasQuestions: boolean }) {
+export function RegistrationPanel({
+    teams,
+    hasQuestions,
+    onBundle,
+}: {
+    teams: TeamForHost[];
+    hasQuestions: boolean;
+    onBundle: (b: HostBundle) => void;
+}) {
     const [starting, setStarting] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
     return (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Card>
-                <CardHeader>
-                    <CardTitle>Registered Teams ({teams.length})</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-2 max-h-96 overflow-y-auto">
-                    {teams.map((t) => (
-                        <div key={t.id} className="flex justify-between border-b border-white/5 py-2 font-montserrat">
-                            <span>{t.name}</span>
-                            <span className="text-champagne/50">{t.leaderName}</span>
-                        </div>
-                    ))}
-                    {teams.length === 0 && <p className="text-champagne/40">No teams registered yet.</p>}
-                </CardContent>
-            </Card>
+        <div className="grid grid-cols-1 md:grid-cols-[1fr_320px] gap-4">
+            <Panel label={`Registered Teams — ${teams.length}`}>
+                {teams.length === 0 ? (
+                    <p className="text-champagne/40 text-sm">No teams registered yet.</p>
+                ) : (
+                    <ul className="space-y-1">
+                        {teams.map((t) => (
+                            <li key={t.id} className="flex justify-between border-b border-white/5 py-2 font-montserrat text-sm">
+                                <span>{t.name}</span>
+                                <span className="text-champagne/40">{t.leaderName}</span>
+                            </li>
+                        ))}
+                    </ul>
+                )}
+            </Panel>
 
-            <Card>
-                <CardHeader>
-                    <CardTitle>Start the Arena</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <p className="text-champagne/60 mb-4">
-                        Once every team has registered and phones are away, start Phase 1.
-                    </p>
-                    <Button
-                        disabled={starting || teams.length === 0 || !hasQuestions}
-                        onClick={async () => {
-                            setStarting(true);
-                            setError(null);
-                            try {
-                                await startPhase1();
-                                sfx.reveal();
-                            } catch {
-                                setError("Failed to start Phase 1 — check your connection and try again.");
-                                sfx.error();
-                                setStarting(false);
-                            }
-                        }}
-                        className="w-full"
-                    >
-                        {starting ? "Starting…" : "Start Phase 1"}
-                    </Button>
-                    {error && <p className="text-buzzer-red text-sm mt-2">{error}</p>}
-                </CardContent>
-            </Card>
+            <Panel label="Start the Arena">
+                <Button
+                    disabled={starting || teams.length === 0 || !hasQuestions}
+                    onClick={async () => {
+                        setStarting(true);
+                        setError(null);
+                        try {
+                            onBundle(await startPhase1());
+                            sfx.reveal();
+                        } catch {
+                            setError("Failed to start Phase 1 — check your connection and try again.");
+                            sfx.error();
+                            setStarting(false);
+                        }
+                    }}
+                    className="w-full"
+                >
+                    {starting ? "Starting…" : "Start Phase 1"}
+                </Button>
+                {error && <p className="text-buzzer-red text-sm mt-2">{error}</p>}
+            </Panel>
         </div>
     );
 }
