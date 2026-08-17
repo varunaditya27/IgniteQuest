@@ -1,0 +1,107 @@
+[
+  {
+    "order": 1,
+    "type": "PREDICT_OUTPUT",
+    "text": "What does this print?",
+    "codeSnippet": "total = 0\nfor i in range(1, 5):\n    total += i * 2\nprint(total)",
+    "options": ["20", "10", "24", "16"],
+    "correctOption": 0,
+    "points": 1000
+  },
+  {
+    "order": 2,
+    "type": "DEBUG",
+    "text": "This should print each name in the list, but it crashes. Why?",
+    "codeSnippet": "names = [\"Ana\", \"Bo\", \"Cy\"]\nfor n in names\n    print(n)",
+    "options": [
+      "Missing colon at the end of the for line",
+      "names should be a tuple",
+      "print() needs an index",
+      "for loops can't iterate over lists"
+    ],
+    "correctOption": 0,
+    "points": 1000
+  },
+  {
+    "order": 3,
+    "type": "PREDICT_OUTPUT",
+    "text": "What does this print?",
+    "codeSnippet": "def mystery(x):\n    if x <= 1:\n        return 1\n    return x * mystery(x - 1)\n\nprint(mystery(4))",
+    "options": ["24", "10", "16", "4"],
+    "correctOption": 0,
+    "points": 1500
+  },
+  {
+    "order": 4,
+    "type": "MULTI_CONCEPT",
+    "text": "What does this print?",
+    "codeSnippet": "scores = {\"a\": 10, \"b\": 20, \"c\": 5}\nbest = max(scores, key=scores.get)\nprint(best)",
+    "options": ["a", "b", "c", "20"],
+    "correctOption": 1,
+    "points": 1500
+  },
+  {
+    "order": 5,
+    "type": "WHICH_CODE_WORKS",
+    "text": "Which snippet correctly reverses a string `s` without using `[::-1]`?",
+    "codeSnippet": null,
+    "options": [
+      "result = \"\"\nfor ch in s:\n    result = ch + result",
+      "result = \"\"\nfor ch in s:\n    result += ch",
+      "result = s.reverse()",
+      "result = sorted(s)"
+    ],
+    "correctOption": 0,
+    "points": 1500
+  },
+  {
+    "order": 6,
+    "type": "PREDICT_OUTPUT",
+    "text": "What does this print?",
+    "codeSnippet": "nums = [3, 1, 4, 1, 5, 9]\nunique = list(set(nums))\nprint(len(unique))",
+    "options": ["6", "5", "4", "3"],
+    "correctOption": 1,
+    "points": 1500
+  },
+  {
+    "order": 7,
+    "type": "MULTI_CONCEPT",
+    "text": "What does this print?",
+    "codeSnippet": "def clean(words):\n    return [w.strip().lower() for w in words if len(w.strip()) > 2]\n\nprint(clean([\" Hi \", \"Go\", \"Python \", \"  \"]))",
+    "options": ["['hi', 'python']", "['python']", "['Hi', 'Python']", "['hi', 'go', 'python']"],
+    "correctOption": 1,
+    "points": 2000
+  },
+  {
+    "order": 8,
+    "type": "WHAT_WOULD_YOU_CHANGE",
+    "text": "This should count how many words appear more than once, but always returns 0. What single change fixes it?",
+    "codeSnippet": "def count_repeats(words):\n    seen = {}\n    repeats = 0\n    for w in words:\n        seen[w] = seen.get(w, 0) + 1\n    for w in seen:\n        if seen[w] == 1:\n            repeats += 1\n    return repeats",
+    "options": [
+      "Change `seen[w] == 1` to `seen[w] > 1`",
+      "Change `seen.get(w, 0)` to `seen.get(w, 1)`",
+      "Change `repeats = 0` to `repeats = 1`",
+      "Change the second loop to iterate over `words` instead of `seen`"
+    ],
+    "correctOption": 0,
+    "points": 2000
+  },
+  {
+    "order": 9,
+    "type": "PREDICT_OUTPUT",
+    "text": "What does this print?",
+    "codeSnippet": "x = [1, 2, 3]\ny = x\ny.append(4)\nprint(x)",
+    "options": ["[1, 2, 3]", "[1, 2, 3, 4]", "Error", "[4]"],
+    "correctOption": 1,
+    "points": 2000
+  },
+  {
+    "order": 10,
+    "type": "MULTI_CONCEPT",
+    "text": "What does this print?",
+    "codeSnippet": "def process(nums):\n    total, count = 0, 0\n    for n in nums:\n        if n > 0:\n            total += n\n            count += 1\n    return total / count if count else 0\n\nprint(process([-2, 4, -1, 6, 8]))",
+    "options": ["6.0", "3.4", "18.0", "4.5"],
+    "correctOption": 0,
+    "points": 2500
+  }
+]

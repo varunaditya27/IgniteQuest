@@ -1,0 +1,166 @@
+[
+  {
+    "order": 1,
+    "type": "MCQ",
+    "text": "Which keyword is used to define a function in Python?",
+    "codeSnippet": null,
+    "options": ["func", "def", "function", "define"],
+    "correctOption": 1,
+    "points": 1000
+  },
+  {
+    "order": 2,
+    "type": "MCQ",
+    "text": "Which of these is a mutable data type in Python?",
+    "codeSnippet": null,
+    "options": ["tuple", "str", "list", "int"],
+    "correctOption": 2,
+    "points": 1000
+  },
+  {
+    "order": 3,
+    "type": "PREDICT_OUTPUT",
+    "text": "What does this print?",
+    "codeSnippet": "x = 7\ny = 2\nprint(x // y)",
+    "options": ["3.5", "3", "4", "1"],
+    "correctOption": 1,
+    "points": 1000
+  },
+  {
+    "order": 4,
+    "type": "MCQ",
+    "text": "What is the result of `3 == 3.0` in Python?",
+    "codeSnippet": null,
+    "options": ["True", "False", "Error", "None"],
+    "correctOption": 0,
+    "points": 1000
+  },
+  {
+    "order": 5,
+    "type": "PREDICT_OUTPUT",
+    "text": "What does this print?",
+    "codeSnippet": "x = 5\nif x > 3 and x < 10:\n    print(\"yes\")\nelse:\n    print(\"no\")",
+    "options": ["yes", "no", "Error", "Nothing"],
+    "correctOption": 0,
+    "points": 1500
+  },
+  {
+    "order": 6,
+    "type": "PREDICT_OUTPUT",
+    "text": "How many times does 'hi' get printed?",
+    "codeSnippet": "for i in range(5):\n    if i % 2 == 0:\n        print(\"hi\")",
+    "options": ["2", "3", "5", "0"],
+    "correctOption": 1,
+    "points": 1500
+  },
+  {
+    "order": 7,
+    "type": "DEBUG",
+    "text": "What is wrong with this code?",
+    "codeSnippet": "for n in range(5)\n    print(n)",
+    "options": [
+      "Missing colon after range(5)",
+      "range() should be xrange()",
+      "print needs two arguments",
+      "Nothing, it runs fine"
+    ],
+    "correctOption": 0,
+    "points": 1500
+  },
+  {
+    "order": 8,
+    "type": "PREDICT_OUTPUT",
+    "text": "What does this print?",
+    "codeSnippet": "x = 3\nfor i in range(4):\n    x += i\nprint(x)",
+    "options": ["6", "9", "10", "3"],
+    "correctOption": 1,
+    "points": 2000
+  },
+  {
+    "order": 9,
+    "type": "MCQ",
+    "text": "Which function returns the number of items in a list?",
+    "codeSnippet": null,
+    "options": ["size()", "count()", "len()", "length()"],
+    "correctOption": 2,
+    "points": 1000
+  },
+  {
+    "order": 10,
+    "type": "PREDICT_OUTPUT",
+    "text": "What does this print?",
+    "codeSnippet": "nums = [1, 2, 3, 4]\nnums.append(5)\nnums.pop(0)\nprint(nums)",
+    "options": ["[1, 2, 3, 4, 5]", "[2, 3, 4, 5]", "[2, 3, 4]", "[5, 1, 2, 3, 4]"],
+    "correctOption": 1,
+    "points": 1500
+  },
+  {
+    "order": 11,
+    "type": "SCENARIO",
+    "text": "You need to store student names mapped to their marks and look them up quickly by name. Which data type fits best?",
+    "codeSnippet": null,
+    "options": ["list", "tuple", "dict", "set"],
+    "correctOption": 2,
+    "points": 1000
+  },
+  {
+    "order": 12,
+    "type": "PREDICT_OUTPUT",
+    "text": "What does this print?",
+    "codeSnippet": "d = {\"a\": 1, \"b\": 2}\nd[\"c\"] = 3\nprint(sum(d.values()))",
+    "options": ["3", "6", "1", "Error"],
+    "correctOption": 1,
+    "points": 1500
+  },
+  {
+    "order": 13,
+    "type": "WHICH_CODE_WORKS",
+    "text": "Which snippet correctly counts the even numbers in a list called `nums`?",
+    "codeSnippet": null,
+    "options": [
+      "count = 0\nfor n in nums:\n    if n % 2 = 0:\n        count += 1",
+      "count = 0\nfor n in nums:\n    if n % 2 == 0:\n        count += 1",
+      "count = 0\nfor n in nums:\n    if n / 2 == 0:\n        count += 1",
+      "count = 0\nfor n in nums:\n    if n % 2 == 1:\n        count -= 1"
+    ],
+    "correctOption": 1,
+    "points": 2000
+  },
+  {
+    "order": 14,
+    "type": "MCQ",
+    "text": "What does `open(\"data.txt\", \"a\")` do?",
+    "codeSnippet": null,
+    "options": [
+      "Opens the file for reading only",
+      "Opens the file for writing, overwriting existing content",
+      "Opens the file for appending to existing content",
+      "Deletes the file"
+    ],
+    "correctOption": 2,
+    "points": 1000
+  },
+  {
+    "order": 15,
+    "type": "MULTI_CONCEPT",
+    "text": "What does this print?",
+    "codeSnippet": "def total_even(nums):\n    result = []\n    for n in nums:\n        if n % 2 == 0:\n            result.append(n)\n    return sum(result)\n\nprint(total_even([1, 2, 3, 4, 5, 6]))",
+    "options": ["12", "21", "6", "9"],
+    "correctOption": 0,
+    "points": 2500
+  },
+  {
+    "order": 16,
+    "type": "WHAT_WOULD_YOU_CHANGE",
+    "text": "This function should return the largest number in the list but always returns 0. What single change fixes it?",
+    "codeSnippet": "def find_max(nums):\n    biggest = 0\n    for n in nums:\n        if n > biggest:\n            biggest = n\n    return biggest\n\nprint(find_max([-5, -2, -9]))",
+    "options": [
+      "Change `biggest = 0` to `biggest = nums[0]`",
+      "Change `>` to `>=`",
+      "Change `return biggest` to `return n`",
+      "Change the for loop to a while loop"
+    ],
+    "correctOption": 0,
+    "points": 2500
+  }
+]
